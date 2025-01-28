@@ -6,22 +6,76 @@ namespace UASM {
 
     void Parser::parse() {
         Token* token;
-        while(cur_token < tokens.size()) {
-            std::unique_ptr<Label> label = parse_label();
-            labels.push_back(std::move(label));
-        }
+        while(cur_token < tokens.size())
+            parse_label();
+        
     }
 
-    std::unique_ptr<Label> Parser::parse_label() {
+    void Parser::parse_label() {
         Token* t;
         Token* label = consume_token(IDENTIFIER_TOKEN, "expected a label");
         Token* colon = consume_token(COLON_TOKEN, "expected a ':' symbol");
         if (label == nullptr || colon == nullptr)
-            return nullptr;
+            return;
         auto node = std::make_unique<Label>();
         node->name = label;
+        labels.push_back(std::move(node));
 
-        return node;
+    }
+
+    void Parser::parse_instruction(Label* label) {
+        Token* t = get_next_token();
+        Instruction inst;
+
+        if (t == nullptr)
+            return;
+
+        switch(t->type) {
+            case ADDI_OPCODE_TOKEN:
+                parse_operand(&inst);
+                parse_operand(&inst);
+                parse_operand(&inst);
+                break;
+            default:
+                logger.log(t->col, t->row, "invalid opcode");
+        }
+
+    }
+
+    void Parser::parse_operand(Instruction* inst) {
+        Operand op;
+    }
+
+    void Parser::parse_variable(Operand& operand) {
+        Token* t = consume_token(IDENTIFIER_TOKEN, "expected a register");
+        if (t == nullptr)
+            return;
+        t = consume_token(COLON_TOKEN, "expected a ':' symbol");
+        if (t == nullptr)
+            return;
+        consume_any(
+                {
+                    I8_TYPE_TOKEN,
+                    I16_TYPE_TOKEN,
+                    I32_TYPE_TOKEN,
+                    I64_TYPE_TOKEN,
+                    F32_TYPE_TOKEN,
+                    F64_TYPE_TOKEN,
+                    U8_TYPE_TOKEN,
+                    U16_TYPE_TOKEN,
+                    U32_TYPE_TOKEN,
+                    U64_TYPE_TOKEN
+                }
+                , 
+                "missing type");
+        
+    }
+
+    Token* Parser::peek() {
+        if (cur_token > tokens.size())
+            throw "peek: out of bounds";
+
+        return tokens.at(cur_token).get();
 
     }
 
@@ -38,5 +92,6 @@ namespace UASM {
         this->cur_token++;
         return t;
     }
+
 }
 

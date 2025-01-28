@@ -16,7 +16,6 @@ namespace UASM {
 
 
     enum TokenType {
-        MNEMONIC_TOKEN,
         COLON_TOKEN,
         COMMA_TOKEN,
         ADDI_OPCODE_TOKEN,
@@ -38,7 +37,6 @@ namespace UASM {
     };
 
     static const std::unordered_map<const char*, TokenType> reserved_words = {
-        // 
         { "addi", ADDI_OPCODE_TOKEN },
         { "i8",   I8_TYPE_TOKEN },
         { "i16",  I16_TYPE_TOKEN },

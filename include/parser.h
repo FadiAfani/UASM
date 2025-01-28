@@ -2,13 +2,14 @@
 #define PARSER_H
 
 #include <memory>
+#include <optional>
 #include "../include/tokenizer.h"
 
 namespace UASM {
 
     struct Operand {
-        Token* variable;
-        Token* type;
+        Token* variable = nullptr;
+        Token* type = nullptr;
     };
 
 
@@ -35,11 +36,14 @@ namespace UASM {
         public:
             Parser(const std::vector<std::unique_ptr<Token>>& _tokens);
             void parse();
+            Token* consume_any(std::initializer_list<TokenType> types, const char* err_msg);
             Token* consume_token(TokenType type, const char* err_msg);
             Token* get_next_token();
-            std::unique_ptr<Label> parse_label();
-            Instruction parse_instruction();
-            Operand parse_operand();
+            Token* peek();
+            void parse_label();
+            void parse_instruction(Label* label);
+            void parse_operand(Instruction* inst);
+            void parse_variable(Operand& operand);
             void get_parser_errors();
             void get_instructions();
 
