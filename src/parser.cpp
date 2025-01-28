@@ -44,16 +44,35 @@ namespace UASM {
 
     void Parser::parse_operand(Instruction* inst) {
         Operand op;
+        Token* t;
+        if ((t = peek(1)) != nullptr && t->type == COLON_TOKEN)
+            parse_variable(op);
+        else {
+
+        t = consume_any(
+                {
+                IDENTIFIER_TOKEN, INTEGER_TOKEN, FLOAT_TOKEN
+                }, 
+                "an operand must eithr be a variable or a number"
+                );
+        if (t != nullptr && t->type == INTEGER_TOKEN || t->type == FLOAT_TOKEN)
+            op.as_number = t;
+        else
+            op.as_variable.variable = t;
+        }
+
+
     }
 
     void Parser::parse_variable(Operand& operand) {
         Token* t = consume_token(IDENTIFIER_TOKEN, "expected a register");
         if (t == nullptr)
             return;
+        operand.as_variable.variable = t;
         t = consume_token(COLON_TOKEN, "expected a ':' symbol");
         if (t == nullptr)
             return;
-        consume_any(
+        t = consume_any(
                 {
                     I8_TYPE_TOKEN,
                     I16_TYPE_TOKEN,
@@ -68,14 +87,16 @@ namespace UASM {
                 }
                 , 
                 "missing type");
+        if (t != nullptr)
+            operand.as_variable.type = t;
         
     }
 
-    Token* Parser::peek() {
-        if (cur_token > tokens.size())
-            throw "peek: out of bounds";
+    Token* Parser::peek(size_t n) {
+        if (cur_token + n > tokens.size())
+            return nullptr;
 
-        return tokens.at(cur_token).get();
+        return tokens.at(cur_token + n).get();
 
     }
 

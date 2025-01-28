@@ -7,9 +7,12 @@
 
 namespace UASM {
 
-    struct Operand {
-        Token* variable = nullptr;
-        Token* type = nullptr;
+    union Operand {
+        struct {
+            Token* variable = nullptr;
+            Token* type = nullptr;
+        } as_variable;
+        Token* as_number = nullptr;
     };
 
 
@@ -35,11 +38,11 @@ namespace UASM {
         
         public:
             Parser(const std::vector<std::unique_ptr<Token>>& _tokens);
-            void parse();
             Token* consume_any(std::initializer_list<TokenType> types, const char* err_msg);
             Token* consume_token(TokenType type, const char* err_msg);
             Token* get_next_token();
-            Token* peek();
+            Token* peek(size_t n);
+            void parse();
             void parse_label();
             void parse_instruction(Label* label);
             void parse_operand(Instruction* inst);
