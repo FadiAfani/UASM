@@ -13,13 +13,24 @@
 
 namespace UASM {
 
-
-
     enum TokenType {
+        PLUS_TOKEN,
+        MINUS_TOKEN,
+        MUL_TOKEN,
+        DIV_TOKEN,
+        LSHIFT_TOKEN,
+        RSHIFT_TOKEN,
+        LT_TOKEN,
+        LTE_TOKEN,
+        BT_TOKEN,
+        BTE_TOKEN,
+        MOD_TOKEN,
+        DEQ_TOKEN,
+        NEQ_TOKEN,
+        EQ_TOKEN,
+        AT_TOKEN,
         COLON_TOKEN,
         COMMA_TOKEN,
-        ADDI_OPCODE_TOKEN,
-        ADD_OPCODE_TOKEN,
         I8_TYPE_TOKEN,
         I16_TYPE_TOKEN,
         I32_TYPE_TOKEN,
@@ -33,11 +44,13 @@ namespace UASM {
         IDENTIFIER_TOKEN,
         INTEGER_TOKEN,
         FLOAT_TOKEN,
+        GOTO_TOKEN,
 
     };
 
-    static const std::unordered_map<const char*, TokenType> reserved_words = {
-        { "addi", ADDI_OPCODE_TOKEN },
+
+    static const std::unordered_map<std::string, TokenType> reserved_words = {
+        { "goto", GOTO_TOKEN },
         { "i8",   I8_TYPE_TOKEN },
         { "i16",  I16_TYPE_TOKEN },
         { "i32",  I32_TYPE_TOKEN },
@@ -68,6 +81,7 @@ namespace UASM {
         public:
             Tokenizer();
             void tokenize(const char* filename);
+            void handle_simple_token(std::string symbol, TokenType type);
             const std::vector<std::unique_ptr<Token>>& get_tokens();
             const std::vector<std::unique_ptr<Error>>& get_errors();
     };

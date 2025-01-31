@@ -17,7 +17,7 @@ namespace UASM {
 
         auto err = std::make_unique<Error>(col, row, msg);
         errors.push_back(std::move(err));
-
     }
+    const std::vector<std::unique_ptr<Error>>& ErrorLogger::get_errors() { return errors; }
 }
 

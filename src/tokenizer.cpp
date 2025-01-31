@@ -8,6 +8,16 @@ UASM::Tokenizer::Tokenizer() {}
 const std::vector<std::unique_ptr<UASM::Error>>& UASM::Tokenizer::get_errors() { return errors; }
 const std::vector<std::unique_ptr<UASM::Token>>& UASM::Tokenizer::get_tokens() { return tokens; }
 
+void UASM::Tokenizer::handle_simple_token(std::string symbol, TokenType type) {
+    std::unique_ptr<Token> token = std::make_unique<Token>();
+    token->col = this->col;
+    this->col += symbol.size();
+    token->row = this->row;
+    token->type = type;
+    token->symbol = symbol;
+    this->tokens.push_back(std::move(token));
+}
+
 void UASM::Tokenizer::tokenize(const char* filename) {
     std::ifstream file(filename);
     char c;
@@ -16,20 +26,58 @@ void UASM::Tokenizer::tokenize(const char* filename) {
     }
 
     while((c = file.get()) != -1) {
-        std::unique_ptr<Token> token = std::make_unique<Token>();
         switch(c) {
             case ':':
-                token->col = ++this->col;
-                token->row = this->row;
-                token->type = COLON_TOKEN;
-                token->symbol = ":";
+                handle_simple_token(":", COLON_TOKEN);
                 break;
             
             case ',':
-                token->col = ++this->col;
-                token->row = this->row;
-                token->type = COMMA_TOKEN;
-                token->symbol = ",";
+                handle_simple_token(":", COMMA_TOKEN);
+                break;
+
+            case '+':
+                handle_simple_token("+", PLUS_TOKEN);
+                break;
+            case '-':
+                handle_simple_token("-", MINUS_TOKEN);
+                break;
+
+            case '*':
+                handle_simple_token("*", MUL_TOKEN);
+                break;
+
+            case '/':
+                handle_simple_token("/", DIV_TOKEN);
+                break;
+
+            case '%':
+                handle_simple_token("%", MOD_TOKEN);
+                break;
+
+            case '>':
+
+                if (file.peek() == '=')
+                    handle_simple_token(">=", BTE_TOKEN);
+                else if (file.peek() == '>')
+                    handle_simple_token(">>", RSHIFT_TOKEN);
+                else
+                    handle_simple_token(">", BT_TOKEN);
+                break;
+
+            case '<':
+                if (file.peek() == '=')
+                    handle_simple_token("<=", LTE_TOKEN);
+                else if (file.peek() == '<')
+                    handle_simple_token("<<", LSHIFT_TOKEN);
+                else
+                    handle_simple_token("<", LT_TOKEN);
+                break;
+
+            case '=':
+                if (file.peek() == '=')
+                    handle_simple_token("==", DEQ_TOKEN);
+                else
+                    handle_simple_token("=", EQ_TOKEN);
                 break;
 
             case '\n':
@@ -45,16 +93,24 @@ void UASM::Tokenizer::tokenize(const char* filename) {
 
             default:
                 /* identifier */
+                std::unique_ptr<Token> token = std::make_unique<Token>();
                 if (std::isalpha(c) || c == '_') {
                     token->col = this->col;
                     token->row = this->row;
                     token->symbol += c;
                     c = file.peek();
                     while (std::isalpha(c) || std::isdigit(c) || c == '_') {
-                        c = file.get();
                         token->symbol += c;
+                        file.get();
+                        c = file.peek();
                         this->col++;
                     }
+
+                    if (reserved_words.count(token->symbol) > 0)
+                        token->type = reserved_words.at(token->symbol);
+                    else
+                        token->type = IDENTIFIER_TOKEN;
+
                 /* number: float/integer */
                 } else if (std::isdigit(c)) {
                     token->col = this->col;
@@ -80,8 +136,10 @@ void UASM::Tokenizer::tokenize(const char* filename) {
 
                 }
 
+                this->tokens.push_back(std::move(token));
+                break;
+
         }
-        this->tokens.push_back(std::move(token));
     }
 
 }

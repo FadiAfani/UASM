@@ -1,8 +1,8 @@
 BUILD = build
 SRC = src
 BIN = bin
-CC = g++
-CLFAGS = -g -std=c++23
+CC = g++-13
+CLFAGS = -g -std=c++20 
 
 OBJS = $(SRCS:$(SRC)/%.cpp=$(BUILD)/%.o)
 SRCS = $(wildcard $(SRC)/*.cpp)

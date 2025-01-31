@@ -21,6 +21,7 @@ namespace UASM {
         public:
             ErrorLogger();
             void log(size_t col, size_t row, const char* msg);
+            const std::vector<std::unique_ptr<Error>>& get_errors();
     };
 
 }
