@@ -11,11 +11,8 @@ int main(int argc, char** argv) {
     UASM::Parser parser(tokenizer.get_tokens());
     tokenizer.tokenize(argv[1]);
     parser.parse();
-    std::cout << parser.get_errors().size() << std::endl;
+    std::cout << parser.get_functions().size() << std::endl;
     for (auto& err : parser.get_errors())
         err->print();
-    for (auto& t : parser.get_labels()) 
-        std::cout << t->name->symbol << std::endl;
-   
     return 0;
 }

@@ -45,6 +45,10 @@ namespace UASM {
         INTEGER_TOKEN,
         FLOAT_TOKEN,
         GOTO_TOKEN,
+        LPAREN_TOKEN,
+        RPAREN_TOKEN,
+        LCURLY_TOKEN,
+        RCURLY_TOKEN
 
     };
 
@@ -68,11 +72,37 @@ namespace UASM {
         size_t row;
         std::string symbol;
         TokenType type;
+
+        Token() = default;
+
+        Token (Token&& other) noexcept : col(other.col), row(other.row), symbol(std::move(other.symbol)), type(other.type) {}
+        Token (Token& other) : col(other.col), row(other.row), symbol(std::move(other.symbol)), type(other.type) {}
+
+        Token& operator=(Token& other) {
+            if (this != &other) {
+                col = other.col;
+                row = other.row;
+                symbol = std::move(other.symbol);
+                type = other.type;
+            }
+            return *this;
+        }
+
+        Token& operator=(Token&& other) noexcept {
+            if (this != &other) {
+                col = other.col;
+                row = other.row;
+                symbol = std::move(other.symbol);
+                type = other.type;
+            }
+
+            return *this;
+        }
     };
 
     class Tokenizer {
         private:
-            std::vector<std::unique_ptr<Token>> tokens;
+            std::vector<Token> tokens;
             size_t col = 0;
             size_t row = 0;
             std::vector<std::unique_ptr<Error>> errors;
@@ -82,7 +112,7 @@ namespace UASM {
             Tokenizer();
             void tokenize(const char* filename);
             void handle_simple_token(std::string symbol, TokenType type);
-            const std::vector<std::unique_ptr<Token>>& get_tokens();
+            std::vector<Token>& get_tokens();
             const std::vector<std::unique_ptr<Error>>& get_errors();
     };
 

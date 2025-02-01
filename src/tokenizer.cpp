@@ -6,15 +6,15 @@
 UASM::Tokenizer::Tokenizer() {}
 
 const std::vector<std::unique_ptr<UASM::Error>>& UASM::Tokenizer::get_errors() { return errors; }
-const std::vector<std::unique_ptr<UASM::Token>>& UASM::Tokenizer::get_tokens() { return tokens; }
+std::vector<UASM::Token>& UASM::Tokenizer::get_tokens() { return tokens; }
 
 void UASM::Tokenizer::handle_simple_token(std::string symbol, TokenType type) {
-    std::unique_ptr<Token> token = std::make_unique<Token>();
-    token->col = this->col;
+    Token token;
+    token.col = this->col;
     this->col += symbol.size();
-    token->row = this->row;
-    token->type = type;
-    token->symbol = symbol;
+    token.row = this->row;
+    token.type = type;
+    token.symbol = symbol;
     this->tokens.push_back(std::move(token));
 }
 
@@ -80,6 +80,26 @@ void UASM::Tokenizer::tokenize(const char* filename) {
                     handle_simple_token("=", EQ_TOKEN);
                 break;
 
+            case '(':
+                handle_simple_token("(", LPAREN_TOKEN);
+                break;
+
+            case ')':
+                handle_simple_token(")", LPAREN_TOKEN);
+                break;
+
+            case '{':
+                handle_simple_token("{", LCURLY_TOKEN);
+                break;
+
+            case '}':
+                handle_simple_token("}", RCURLY_TOKEN);
+                break;
+
+            case '@':
+                handle_simple_token("@", RCURLY_TOKEN);
+                break;
+
             case '\n':
                 this->col = 0;
                 break;
@@ -93,39 +113,40 @@ void UASM::Tokenizer::tokenize(const char* filename) {
 
             default:
                 /* identifier */
-                std::unique_ptr<Token> token = std::make_unique<Token>();
+                Token token;
+                
                 if (std::isalpha(c) || c == '_') {
-                    token->col = this->col;
-                    token->row = this->row;
-                    token->symbol += c;
+                    token.col = this->col;
+                    token.row = this->row;
+                    token.symbol += c;
                     c = file.peek();
                     while (std::isalpha(c) || std::isdigit(c) || c == '_') {
-                        token->symbol += c;
+                        token.symbol += c;
                         file.get();
                         c = file.peek();
                         this->col++;
                     }
 
-                    if (reserved_words.count(token->symbol) > 0)
-                        token->type = reserved_words.at(token->symbol);
+                    if (reserved_words.count(token.symbol) > 0)
+                        token.type = reserved_words.at(token.symbol);
                     else
-                        token->type = IDENTIFIER_TOKEN;
+                        token.type = IDENTIFIER_TOKEN;
 
                 /* number: float/integer */
                 } else if (std::isdigit(c)) {
-                    token->col = this->col;
-                    token->row = this->row;
-                    token->symbol += c;
+                    token.col = this->col;
+                    token.row = this->row;
+                    token.symbol += c;
                     while ((c = file.get()) && std::isdigit(c)) {
-                        token->symbol += c;
+                        token.symbol += c;
                         this->col++;
                     }
-                    token->type = INTEGER_TOKEN;
+                    token.type = INTEGER_TOKEN;
                     if (file.peek() == '.') {
-                        token->type = FLOAT_TOKEN;
-                        token->symbol += file.get();
+                        token.type = FLOAT_TOKEN;
+                        token.symbol += file.get();
                         while ((c = file.get()) && std::isdigit(c)) {
-                            token->symbol += c;
+                            token.symbol += c;
                             this->col++;
                         }
                     }
