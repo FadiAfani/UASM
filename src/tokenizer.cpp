@@ -85,7 +85,7 @@ void UASM::Tokenizer::tokenize(const char* filename) {
                 break;
 
             case ')':
-                handle_simple_token(")", LPAREN_TOKEN);
+                handle_simple_token(")", RPAREN_TOKEN);
                 break;
 
             case '{':
@@ -97,7 +97,7 @@ void UASM::Tokenizer::tokenize(const char* filename) {
                 break;
 
             case '@':
-                handle_simple_token("@", RCURLY_TOKEN);
+                handle_simple_token("@", AT_TOKEN);
                 break;
 
             case '\n':

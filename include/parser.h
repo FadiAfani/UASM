@@ -73,9 +73,12 @@ namespace UASM {
             Token* consume_token(TokenType type, const char* err_msg);
             Token* get_next_token();
             Token* peek(size_t n);
-            Token* parse_type();
+            Token* parse_binary_op(const char* err_msg);
+            Token* parse_type(const char* err_msg);
+            Token* parse_literal(const char* err_msg);
             void parse();
             void parse_function();
+            void recover(std::initializer_list<TokenType> safe_tokens);
             std::optional<Label> parse_label();
             std::optional<Instruction> parse_instruction();
             std::optional<Assignment> parse_assignment();

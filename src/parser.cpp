@@ -25,59 +25,58 @@ namespace UASM {
     Parser::Parser(std::vector<UASM::Token>& _tokens) : tokens(_tokens) {}
 
     void Parser::parse() {
-        Token* t = peek(0);
-        while(t != nullptr && t->type == AT_TOKEN)
+        Token* t;
+        while((t = peek(0)) != nullptr && t->type == AT_TOKEN)
             parse_function();
     }
 
     void Parser::parse_function() {
         Function func;
-        consume_token(AT_TOKEN, nullptr);
-        Token* name = consume_token(IDENTIFIER_TOKEN, "expected an identifier");
-        Token* lparen = consume_token(LPAREN_TOKEN, "expected a '(' symbol");
-        if (name == nullptr || lparen == nullptr)
-            return;
+        consume_token(AT_TOKEN, "");
+        func.name = peek(0);
+        consume_token(IDENTIFIER_TOKEN, "expected an identifier");
+        consume_token(LPAREN_TOKEN, "expected a '(' symbol");
         std::optional<VarDef> p = parse_definition();
         if (p.has_value()) {
             Token* comma;
             func.params.push_back(p.value());
-            while ( (comma = consume_token(COMMA_TOKEN, nullptr) ) != nullptr && comma->type == COMMA_TOKEN) {
+            while ( (comma = peek(0)) != nullptr && comma->type == COMMA_TOKEN) {
+                consume_token(COMMA_TOKEN, nullptr);
                 p = parse_definition();
                 func.params.push_back(p.value());
             }
-            Token* rparen = consume_token(RPAREN_TOKEN, "expected a ')' symbol");
-            Token* colon  = consume_token(COLON_TOKEN, "expected a ':' symbol");
-            func.ret_type = parse_type();
-            Token* lcurly = consume_token(LCURLY_TOKEN, "expected a '{' symbol");
+            consume_token(RPAREN_TOKEN, "expected a ')' symbol");
+            consume_token(COLON_TOKEN, "expected a ':' symbol");
+            func.ret_type = parse_type("expected a type");
+            consume_token(LCURLY_TOKEN, "expected a '{' symbol");
             Token* mod;
             while((mod = peek(0)) != nullptr && mod->type == MOD_TOKEN) {
                 std::optional<Label> label = parse_label();
                 if (label.has_value())
                     func.labels.insert({ label->name->symbol, label.value() });
             }
-            Token* rcurly = consume_token(RCURLY_TOKEN, "expected a '}' symbol");
-            if (rcurly == nullptr)
-                return;
-            functions.insert({name->symbol, std::move(func)});
+            consume_token(RCURLY_TOKEN, "expected a '}' symbol");
+            functions.insert({func.name->symbol, std::move(func)});
 
         }
     }
 
     std::optional<Label> Parser::parse_label() {
-        Token* mod = consume_token(MOD_TOKEN, "labels start with a '%' symbol");
-        Token* name = consume_token(IDENTIFIER_TOKEN, "expected a label");
-        Token* colon = consume_token(COLON_TOKEN, "expected a ':' symbol");
         Token* t;
-
-        if (name == nullptr || colon == nullptr || mod == nullptr)
-            return {};
         Label label;
-        label.name = name;
+
+        consume_token(MOD_TOKEN, "");
+        label.name = peek(0);
+        consume_token(IDENTIFIER_TOKEN, "expected an identifier");
+        consume_token(COLON_TOKEN, "expected a ':' symbol");
+
 
         while ((t = peek(0)) != nullptr && t->type != MOD_TOKEN) {
             std::optional<Instruction> inst = parse_instruction();
             if (inst.has_value())
                 label.instructions.push_back(std::move(inst.value()));
+            else
+                break;
         }
 
         return label;
@@ -126,7 +125,7 @@ namespace UASM {
         t = consume_token(COLON_TOKEN, "expected a ':' symbol");
         if (t == nullptr)
             return {};
-        t = parse_type();
+        t = parse_type("expected a type");
 
         if (t == nullptr) {
             logger.log(def.variable->col, def.variable->row, "missing type");
@@ -140,7 +139,7 @@ namespace UASM {
 
     std::optional<JmpInst> Parser::parse_jmp() {
         JmpInst inst;
-        consume_token(GOTO_TOKEN, nullptr);
+        consume_token(GOTO_TOKEN, "");
         Token* t = consume_token(IDENTIFIER_TOKEN, "goto instructions require at least a target label");
         if (t == nullptr)
             return {};
@@ -170,7 +169,7 @@ namespace UASM {
 
     std::optional<BinaryExpr> Parser::parse_binary_expr() {
         BinaryExpr expr;
-        expr.left = consume_any({IDENTIFIER_TOKEN, FLOAT_TOKEN, INTEGER_TOKEN}, nullptr);
+        expr.left = parse_literal("expected an operand");
         expr.op = consume_any(
             {
             PLUS_TOKEN, 
@@ -188,7 +187,7 @@ namespace UASM {
             NEQ_TOKEN
             }, nullptr);
         
-        expr.right = consume_any({IDENTIFIER_TOKEN, FLOAT_TOKEN, INTEGER_TOKEN}, "expected an operand after operation");
+        expr.right = parse_literal("expected an operand");
         if (expr.right == nullptr)
             return {};
 
@@ -205,14 +204,9 @@ namespace UASM {
 
     Token* Parser::consume_token(TokenType type, const char* err_msg) {
         Token* t = get_next_token();
-        if (t == nullptr) {
-            const Token& last = tokens.back();
-            logger.log(last.col, last.row, err_msg);
-            return nullptr;
-        }
-        if (t->type != type)
-            logger.log(t->col, t->row, err_msg);
-
+        if (t == nullptr || t->type != type)
+            throw std::logic_error(err_msg);
+        
         this->cur_token++;
         return t;
     }
@@ -226,8 +220,7 @@ namespace UASM {
             }
             
         }
-        Token& last = tokens.back();
-        logger.log(last.col, last.row, err_msg);
+        throw std::logic_error(err_msg);
         return nullptr;
     }
 
@@ -239,22 +232,52 @@ namespace UASM {
         return nullptr;
     }
 
-    Token* Parser::parse_type() {
-        Token* t = peek(0);
-        if (t == nullptr 
-                || t->type != I8_TYPE_TOKEN
-                || t->type != I16_TYPE_TOKEN
-                || t->type != I32_TYPE_TOKEN
-                || t->type != I64_TYPE_TOKEN
-                || t->type != U8_TYPE_TOKEN
-                || t->type != U16_TYPE_TOKEN
-                || t->type != U32_TYPE_TOKEN
-                || t->type != U64_TYPE_TOKEN
-                || t->type != F32_TYPE_TOKEN
-                || t->type != F64_TYPE_TOKEN
-                )
-            return nullptr;
-        return t;
+    Token* Parser::parse_binary_op(const char* err_msg) {
+        return consume_any({
+                PLUS_TOKEN,
+                MINUS_TOKEN,
+                DIV_TOKEN,
+                MUL_TOKEN,
+                RSHIFT_TOKEN,
+                LSHIFT_TOKEN,
+                NEQ_TOKEN,
+                DEQ_TOKEN,
+                LT_TOKEN,
+                LTE_TOKEN,
+                BT_TOKEN,
+                BTE_TOKEN
+                },
+                err_msg);
+    }
+
+    Token* Parser::parse_type(const char* err_msg) {
+        return  consume_any({
+                I8_TYPE_TOKEN,
+                I16_TYPE_TOKEN,
+                I32_TYPE_TOKEN,
+                I64_TYPE_TOKEN,
+                U8_TYPE_TOKEN,
+                U16_TYPE_TOKEN,
+                U32_TYPE_TOKEN,
+                U64_TYPE_TOKEN,
+                F32_TYPE_TOKEN,
+                F64_TYPE_TOKEN
+                },
+                err_msg);
+    }
+    Token* Parser::parse_literal(const char* err_msg) {
+        return consume_any({IDENTIFIER_TOKEN, FLOAT_TOKEN, INTEGER_TOKEN}, err_msg);
+    }
+
+    void Parser::recover(std::initializer_list<TokenType> safe_tokens) {
+        while (cur_token < tokens.size()) {
+            Token& token = tokens[cur_token];
+            for (TokenType t : safe_tokens) {
+                if (token.type == t)
+                    return;
+            }
+            cur_token++;
+        }
     }
 
     const std::vector<std::unique_ptr<Error>>& Parser::get_errors() { return logger.get_errors(); }
