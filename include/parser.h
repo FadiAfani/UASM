@@ -90,7 +90,7 @@ namespace UASM {
             std::optional<Expr> parse_expr();
             std::optional<Symbol> parse_definition();
             void get_parser_errors();
-            const std::unordered_map<std::string, Function>& get_functions();
+            std::unordered_map<std::string, Function>& get_functions();
             const std::vector<std::unique_ptr<Error>>& get_errors();
 
     };

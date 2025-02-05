@@ -61,6 +61,8 @@ namespace UASM {
         }
     }
 
+    // TODO: add label symbols to the parent function's symbol table
+
     std::optional<Label> Parser::parse_label() {
         Token* t;
         Label label;
@@ -212,8 +214,9 @@ namespace UASM {
 
     Token* Parser::consume_token(TokenType type, const char* err_msg) {
         Token* t = get_next_token();
-        if (t == nullptr || t->type != type)
+        if (t == nullptr || t->type != type) {
             throw std::logic_error(err_msg);
+        }
         
         this->cur_token++;
         return t;
@@ -290,7 +293,7 @@ namespace UASM {
 
     const std::vector<std::unique_ptr<Error>>& Parser::get_errors() { return logger.get_errors(); }
 
-    const std::unordered_map<std::string, Function>& Parser::get_functions() {
+    std::unordered_map<std::string, Function>& Parser::get_functions() {
         return functions;
     }
 

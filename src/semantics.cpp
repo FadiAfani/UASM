@@ -1,7 +1,12 @@
 #include "../include/semantics.h"
 
 namespace UASM {
-    Analyzer::Analyzer(const std::unordered_map<std::string, Function>& _functions, std::unordered_map<std::string, Symbol>& _symbols) : functions(_functions), symbols(_symbols) {};
+    Analyzer::Analyzer(std::unordered_map<std::string, Function>& _functions) : functions(_functions) {};
+
+    void Analyzer::analyze() {
+        for (auto& f : functions)
+            verify_func(f.second);
+    }
 
     void Analyzer::verify_func(Function& func) {
         for (auto& p : func.labels) {
@@ -31,13 +36,17 @@ namespace UASM {
     }
 
     void Analyzer::verify_binary_expr(Function& func, BinaryExpr& expr, TokenType expected_type) {
+        TokenType t1;
+        TokenType t2;
         switch(expr.op->type) {
             case MINUS_TOKEN:
             case PLUS_TOKEN:
             case DIV_TOKEN:
             case MUL_TOKEN:
-                if (expr.left->type != expr.right->type 
-                        || (expr.left->type == expr.right->type && expr.left->type == expected_type))
+                t1 = get_operand_type(func, expr.left);
+                t2 = get_operand_type(func, expr.right);
+                if (t1 != t2
+                        || (t1 == t2 && t1 != expected_type))
                     throw std::logic_error("incompatible types for this operation");
                 break;
             case BT_TOKEN:
@@ -46,7 +55,9 @@ namespace UASM {
             case LTE_TOKEN:
             case NEQ_TOKEN:
             case DEQ_TOKEN:
-                if (expr.left->type != expr.right->type)
+                t1 = get_operand_type(func, expr.left);
+                t2 = get_operand_type(func, expr.right);
+                if (t1 != t2)
                     throw std::logic_error("comparison operations can only be applied on operands of the same type");
                 else if (expected_type != I1_TYPE_TOKEN)
                     throw std::logic_error("comparison operation produce a value of type 'i1'");
@@ -59,7 +70,7 @@ namespace UASM {
     }
 
     void Analyzer::verify_literal(Function& func, Token* literal, TokenType expected_type) {
-        if (symbols.count(literal->symbol) == 0)
+        if (func.symbols.count(literal->symbol) == 0)
             throw std::logic_error("undefined symbol");
         if (literal->type != expected_type)
             throw std::logic_error("assignment failed - incompatible types");
@@ -73,6 +84,15 @@ namespace UASM {
     void Analyzer::verify_ret(Function& func, Token* ret_val) {
         if (func.ret_type->type != ret_val->type)
             throw std::logic_error("returned type does not match the function's return type");
+    }
+
+    TokenType Analyzer::get_operand_type(Function& func, Token* operand) {
+        if (operand->type == IDENTIFIER_TOKEN) {
+            Symbol& sym = func.symbols.at(operand->symbol);
+            return sym.type->type;
+        }
+        
+        return I1_TYPE_TOKEN;
     }
 
 }
