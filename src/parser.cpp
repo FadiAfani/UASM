@@ -36,14 +36,14 @@ namespace UASM {
         func.name = peek(0);
         consume_token(IDENTIFIER_TOKEN, "expected an identifier");
         consume_token(LPAREN_TOKEN, "expected a '(' symbol");
-        std::optional<VarDef> p = parse_definition();
+        std::optional<Symbol> p = parse_definition();
         if (p.has_value()) {
             Token* comma;
-            func.params.push_back(p.value());
+            func.symbols.insert({p->variable->symbol, p.value()});
             while ( (comma = peek(0)) != nullptr && comma->type == COMMA_TOKEN) {
                 consume_token(COMMA_TOKEN, nullptr);
                 p = parse_definition();
-                func.params.push_back(p.value());
+                func.symbols.insert({p->variable->symbol, p.value()});
             }
             consume_token(RPAREN_TOKEN, "expected a ')' symbol");
             consume_token(COLON_TOKEN, "expected a ':' symbol");
@@ -79,8 +79,13 @@ namespace UASM {
                 break;
         }
 
-        return label;
+        return std::move(label);
 
+    }
+
+    Token* Parser::parse_ret() {
+        consume_token(RET_TOKEN, "");
+        return parse_literal("expected a value after 'ret'");
     }
 
     std::optional<Instruction> Parser::parse_instruction() {
@@ -92,6 +97,8 @@ namespace UASM {
             return parse_assignment();
         else if (t->type == GOTO_TOKEN)
             return parse_jmp();
+        else if (t->type == RET_TOKEN)
+            return parse_ret();
         return {};
     }
 
@@ -99,9 +106,10 @@ namespace UASM {
         Token* t;
         Assignment inst;
 
-        std::optional<VarDef> def = parse_definition(); 
+        std::optional<Symbol> def = parse_definition(); 
         if (!def.has_value())
             return {};
+        inst.identifier = def.value();
         t = consume_token(EQ_TOKEN, "missing '=' symbol");
         if (t == nullptr)
             return {};
@@ -116,8 +124,8 @@ namespace UASM {
         
     }
 
-    std::optional<VarDef> Parser::parse_definition() {
-        VarDef def;
+    std::optional<Symbol> Parser::parse_definition() {
+        Symbol def;
         Token* t = consume_token(IDENTIFIER_TOKEN, "expected a register");
         if (t == nullptr)
             return {};

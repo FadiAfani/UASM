@@ -8,12 +8,13 @@
 
 namespace UASM {
 
-    struct VarDef {
+    struct Symbol {
         Token* variable;
         Token* type;
+        unsigned int reg;
     };
 
-    typedef std::variant<VarDef, Token*> Operand;
+    typedef std::variant<Symbol, Token*> Operand;
 
     struct BinaryExpr {
         Token* left;
@@ -35,7 +36,7 @@ namespace UASM {
     typedef std::variant<BinaryExpr, Token*> Expr;
 
     struct Assignment {
-        VarDef def; 
+        Symbol identifier;
         Expr expr;
 
     };
@@ -45,7 +46,7 @@ namespace UASM {
         Token* target;
     };
 
-    typedef std::variant<Assignment, JmpInst> Instruction;
+    typedef std::variant<Assignment, JmpInst, Token*> Instruction;
 
     struct Label {
         Token* name;
@@ -56,7 +57,7 @@ namespace UASM {
         Token* name;
         Token* ret_type;
         std::unordered_map<std::string, Label> labels;
-        std::vector<VarDef> params;
+        std::unordered_map<std::string, Symbol> symbols;
     };
 
     class Parser {
@@ -83,10 +84,11 @@ namespace UASM {
             std::optional<Instruction> parse_instruction();
             std::optional<Assignment> parse_assignment();
             std::optional<JmpInst> parse_jmp();
+            Token* parse_ret();
             void parse_func_call();
             std::optional<BinaryExpr> parse_binary_expr();
             std::optional<Expr> parse_expr();
-            std::optional<VarDef> parse_definition();
+            std::optional<Symbol> parse_definition();
             void get_parser_errors();
             const std::unordered_map<std::string, Function>& get_functions();
             const std::vector<std::unique_ptr<Error>>& get_errors();

@@ -31,6 +31,7 @@ namespace UASM {
         AT_TOKEN,
         COLON_TOKEN,
         COMMA_TOKEN,
+        I1_TYPE_TOKEN,
         I8_TYPE_TOKEN,
         I16_TYPE_TOKEN,
         I32_TYPE_TOKEN,
@@ -48,13 +49,16 @@ namespace UASM {
         LPAREN_TOKEN,
         RPAREN_TOKEN,
         LCURLY_TOKEN,
-        RCURLY_TOKEN
+        RCURLY_TOKEN,
+        RET_TOKEN,
 
     };
 
 
     static const std::unordered_map<std::string, TokenType> reserved_words = {
         { "goto", GOTO_TOKEN },
+        { "ret",  RET_TOKEN  },
+        { "i1" ,  I1_TYPE_TOKEN },
         { "i8",   I8_TYPE_TOKEN },
         { "i16",  I16_TYPE_TOKEN },
         { "i32",  I32_TYPE_TOKEN },
