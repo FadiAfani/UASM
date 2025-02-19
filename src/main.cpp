@@ -14,8 +14,5 @@ int main(int argc, char** argv) {
     parser.parse();
     UASM::Analyzer analyzer(parser.get_functions());
     analyzer.analyze();
-    std::cout << parser.get_functions().size() << std::endl;
-    for (auto& err : parser.get_errors())
-        err->print();
     return 0;
 }

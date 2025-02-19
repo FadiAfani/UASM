@@ -27,6 +27,11 @@ namespace UASM {
     }
 
     void Analyzer::verify_assignment(Function& func, Assignment& inst) {
+        if (func.symbols.count(inst.identifier.variable->symbol) > 0)
+            std::logic_error("ssa violation - variable redeclaration");
+
+        func.symbols.insert( { inst.identifier.variable->symbol, inst.identifier } );
+
         if (std::holds_alternative<BinaryExpr>(inst.expr))
             verify_binary_expr(func, std::get<BinaryExpr>(inst.expr), inst.identifier.type->type);
         else 

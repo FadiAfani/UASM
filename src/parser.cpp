@@ -51,7 +51,7 @@ namespace UASM {
             consume_token(LCURLY_TOKEN, "expected a '{' symbol");
             Token* mod;
             while((mod = peek(0)) != nullptr && mod->type == MOD_TOKEN) {
-                std::optional<Label> label = parse_label();
+                std::optional<Label> label = parse_label(func);
                 if (label.has_value())
                     func.labels.insert({ label->name->symbol, label.value() });
             }
@@ -63,7 +63,7 @@ namespace UASM {
 
     // TODO: add label symbols to the parent function's symbol table
 
-    std::optional<Label> Parser::parse_label() {
+    std::optional<Label> Parser::parse_label(Function& func) {
         Token* t;
         Label label;
 
@@ -74,7 +74,7 @@ namespace UASM {
 
 
         while ((t = peek(0)) != nullptr && t->type != MOD_TOKEN) {
-            std::optional<Instruction> inst = parse_instruction();
+            std::optional<Instruction> inst = parse_instruction(func);
             if (inst.has_value())
                 label.instructions.push_back(std::move(inst.value()));
             else
@@ -90,13 +90,13 @@ namespace UASM {
         return parse_literal("expected a value after 'ret'");
     }
 
-    std::optional<Instruction> Parser::parse_instruction() {
+    std::optional<Instruction> Parser::parse_instruction(Function& func) {
         Token* t = peek(0);
         std::optional<Instruction> inst;
         if (t == nullptr)
             return {};
         if (t->type == IDENTIFIER_TOKEN) 
-            return parse_assignment();
+            return parse_assignment(func);
         else if (t->type == GOTO_TOKEN)
             return parse_jmp();
         else if (t->type == RET_TOKEN)
@@ -104,7 +104,7 @@ namespace UASM {
         return {};
     }
 
-    std::optional<Assignment> Parser::parse_assignment() {
+    std::optional<Assignment> Parser::parse_assignment(Function& func) {
         Token* t;
         Assignment inst;
 
@@ -120,7 +120,8 @@ namespace UASM {
             logger.log(t->col, t->row, "expected an expression after '='");
             return {};
         }
-        
+
+        func.symbols.insert({def.value().variable->symbol, def.value() });
         inst.expr = expr.value(); 
         return inst;
         
@@ -141,7 +142,7 @@ namespace UASM {
             logger.log(def.variable->col, def.variable->row, "missing type");
             return {};
         }
-        def.variable = t;
+        def.type = t;
 
         return def;
         

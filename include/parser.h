@@ -80,9 +80,9 @@ namespace UASM {
             void parse();
             void parse_function();
             void recover(std::initializer_list<TokenType> safe_tokens);
-            std::optional<Label> parse_label();
-            std::optional<Instruction> parse_instruction();
-            std::optional<Assignment> parse_assignment();
+            std::optional<Label> parse_label(Function& func);
+            std::optional<Instruction> parse_instruction(Function& func);
+            std::optional<Assignment> parse_assignment(Function& func);
             std::optional<JmpInst> parse_jmp();
             Token* parse_ret();
             void parse_func_call();
