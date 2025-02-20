@@ -51,11 +51,13 @@ namespace UASM {
         LCURLY_TOKEN,
         RCURLY_TOKEN,
         RET_TOKEN,
+        EXTERN_TOKEN
 
     };
 
 
     static const std::unordered_map<std::string, TokenType> reserved_words = {
+        { "extern", EXTERN_TOKEN },
         { "goto", GOTO_TOKEN },
         { "ret",  RET_TOKEN  },
         { "i1" ,  I1_TYPE_TOKEN },

@@ -8,6 +8,8 @@
 
 namespace UASM {
 
+    
+
     struct Symbol {
         Token* variable;
         Token* type;
@@ -60,12 +62,17 @@ namespace UASM {
         std::unordered_map<std::string, Symbol> symbols;
     };
 
+
+    struct Program {
+        std::unordered_map<std::string, Function> functions;
+        std::unordered_map<std::string, Token*> externs;
+    };
+
     class Parser {
         private:
             std::vector<Token>& tokens;
             std::vector<std::unique_ptr<Error>> errors;
-            std::unordered_map<std::string, Function> functions;
-            ErrorLogger logger;
+            std::unique_ptr<Program> program = nullptr;
             size_t cur_token = 0;
         
         public:
@@ -77,7 +84,9 @@ namespace UASM {
             Token* parse_binary_op(const char* err_msg);
             Token* parse_type(const char* err_msg);
             Token* parse_literal(const char* err_msg);
-            void parse();
+            std::unique_ptr<Program> parse();
+            void parse_stmt();
+            void parse_extern_stmt();
             void parse_function();
             void recover(std::initializer_list<TokenType> safe_tokens);
             std::optional<Label> parse_label(Function& func);

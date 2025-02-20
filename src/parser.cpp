@@ -24,10 +24,23 @@ namespace UASM {
 
     Parser::Parser(std::vector<UASM::Token>& _tokens) : tokens(_tokens) {}
 
-    void Parser::parse() {
+    std::unique_ptr<Program> Parser::parse() {
+        this->program = std::make_unique<Program>();
         Token* t;
-        while((t = peek(0)) != nullptr && t->type == AT_TOKEN)
+        while((t = peek(0)) != nullptr) {
+            parse_stmt();
+        }
+
+        return std::move(this->program);
+    }
+
+    void Parser::parse_stmt() {
+        Token* t;
+        if ((t = peek(0))->type == AT_TOKEN)
             parse_function();
+        else if (t->type == EXTERN_TOKEN)
+            parse_extern_stmt();
+
     }
 
     void Parser::parse_function() {
@@ -56,7 +69,7 @@ namespace UASM {
                     func.labels.insert({ label->name->symbol, label.value() });
             }
             consume_token(RCURLY_TOKEN, "expected a '}' symbol");
-            functions.insert({func.name->symbol, std::move(func)});
+            program->functions.insert({func.name->symbol, std::move(func)});
 
         }
     }
@@ -117,7 +130,6 @@ namespace UASM {
             return {};
         auto expr = parse_expr();
         if (!expr.has_value()) {
-            logger.log(t->col, t->row, "expected an expression after '='");
             return {};
         }
 
@@ -139,7 +151,6 @@ namespace UASM {
         t = parse_type("expected a type");
 
         if (t == nullptr) {
-            logger.log(def.variable->col, def.variable->row, "missing type");
             return {};
         }
         def.type = t;
@@ -292,11 +303,6 @@ namespace UASM {
         }
     }
 
-    const std::vector<std::unique_ptr<Error>>& Parser::get_errors() { return logger.get_errors(); }
-
-    std::unordered_map<std::string, Function>& Parser::get_functions() {
-        return functions;
-    }
 
 }
 

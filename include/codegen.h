@@ -10,10 +10,10 @@ namespace UASM {
 
     class CodeGenerator {
         protected:
-            std::unordered_map<std::string, Function>& functions;
+            std::unique_ptr<Program> program = nullptr;
             std::ofstream output_file;
         public:
-            CodeGenerator();
+            CodeGenerator(std::unique_ptr<Program> program);
             virtual void generate(const char* file_path);
             virtual void alloc_registers(std::vector<unsigned int> colors, InterferenceGraph& graph);
             virtual void compile_function(Function& func);
@@ -32,8 +32,7 @@ namespace UASM {
 
     class x86_64Generator : CodeGenerator {
         public:
-            x86_64Generator();
-            void generate(const char* file_path) override;
+            x86_64Generator(std::unique_ptr<Program> _program);
             void compile_binary_expr(BinaryExpr& expr) override;
             void compile_assignment(Assignment& assignment) override;
             void compile_goto(JmpInst& inst) override;

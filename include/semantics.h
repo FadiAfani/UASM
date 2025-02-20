@@ -9,9 +9,9 @@ namespace UASM {
 
     class Analyzer {
         private:
-            std::unordered_map<std::string, Function>& functions;
+            std::unique_ptr<Program> program = nullptr;
         public:
-            Analyzer(std::unordered_map<std::string, Function>& _functions);
+            Analyzer(std::unique_ptr<Program> program);
             void analyze();
             void verify_expr(Function& func, Expr& expr);
             void verify_binary_expr(Function& func, BinaryExpr& expr, TokenType expected_type);

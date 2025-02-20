@@ -11,8 +11,8 @@ int main(int argc, char** argv) {
     UASM::Tokenizer tokenizer;
     UASM::Parser parser(tokenizer.get_tokens());
     tokenizer.tokenize(argv[1]);
-    parser.parse();
-    UASM::Analyzer analyzer(parser.get_functions());
+    std::unique_ptr<UASM::Program> program = parser.parse();
+    UASM::Analyzer analyzer(std::move(program));
     analyzer.analyze();
     return 0;
 }

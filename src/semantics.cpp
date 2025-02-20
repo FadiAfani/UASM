@@ -1,10 +1,10 @@
 #include "../include/semantics.h"
 
 namespace UASM {
-    Analyzer::Analyzer(std::unordered_map<std::string, Function>& _functions) : functions(_functions) {};
+    Analyzer::Analyzer(std::unique_ptr<Program> _program) : program(std::move(_program)) {};
 
     void Analyzer::analyze() {
-        for (auto& f : functions)
+        for (auto& f : program->functions)
             verify_func(f.second);
     }
 
