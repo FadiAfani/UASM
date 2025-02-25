@@ -1,14 +1,22 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <cstddef>
 #include <memory>
 #include <optional>
 #include <variant>
-#include "../include/tokenizer.h"
+#include <queue>
+#include "tokenizer.h"
+#include "visitor.h"
 
 namespace UASM {
 
-    
+    struct Unit {
+        virtual ~Unit() {}
+        virtual void print() = 0;
+        virtual void accept(Visitor& visitor) = 0;
+
+    };
 
     struct Symbol {
         Token* variable;
@@ -18,54 +26,79 @@ namespace UASM {
 
     typedef std::variant<Symbol, Token*> Operand;
 
-    struct BinaryExpr {
+    struct BinaryExpr : Unit {
         Token* left;
         Token* op;
         Token* right;
+
+        void print() override;
+        void accept(Visitor& visitor) override;
     };
 
-    struct FuncCall {
+    struct FuncCall : Unit {
         Token* id;
         std::vector<std::reference_wrapper<Token>> args;
+
+        void print() override;
+        void accept(Visitor& visitor) override;
     };
 
-    struct UnaryExpr {
+    struct UnaryExpr : Unit {
         Token* op;
         Token* value;
+
+        void print() override;
+        void accept(Visitor& visitor) override;
 
     };
 
     typedef std::variant<BinaryExpr, Token*> Expr;
 
-    struct Assignment {
+    struct Assignment : Unit {
         Symbol identifier;
         Expr expr;
 
+        void print() override;
+        void accept(Visitor& visitor) override;
+
     };
 
-    struct JmpInst {
+    struct JmpInst : Unit {
         Token* cond;
         Token* target;
+
+        void print() override;
+        void accept(Visitor& visitor) override;
     };
 
     typedef std::variant<Assignment, JmpInst, Token*> Instruction;
 
-    struct Label {
+    struct Label : Unit {
         Token* name;
         std::vector<Instruction> instructions;
+
+        void print() override;
+        void accept(Visitor& visitor) override;
     };
 
-    struct Function {
+    struct Function : Unit {
         Token* name;
         Token* ret_type;
         std::unordered_map<std::string, Label> labels;
         std::unordered_map<std::string, Symbol> symbols;
+
+        void print() override;
+        void accept(Visitor& visitor) override;
+        void insert_symbol(Symbol sym);
     };
 
-
-    struct Program {
+    struct Program : Unit {
         std::unordered_map<std::string, Function> functions;
         std::unordered_map<std::string, Token*> externs;
+
+        void print() override;
+        void accept(Visitor& visitor) override;
+
     };
 
     class Parser {

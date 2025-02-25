@@ -1,21 +1,16 @@
-#ifndef SEMANTICS_H
-#define SEMANTICS_H
+#ifndef SSA_OPTIMIZER
+#define SSA_OPTIMIZER
 
-#include "parser.h"
-#include "program_visitor.h"
-
-#include <string>
+#include "optimizer.h"
 
 namespace UASM {
-
-    class Analyzer : ProgramVisitor {
+    class SSAOptimizer : Optimizer {
         private:
-            std::unique_ptr<Program> program = nullptr;
-            std::unordered_map<Unit*, TokenType> expr_types;
-            Function* ctx;
+            unsigned int temps = 0;
+            std::pair<Function*, Label*> ctx;
         public:
-            Analyzer(std::unique_ptr<Program> program);
-            void analyze();
+            SSAOptimizer(std::unique_ptr<Program> _program);
+            void optimize() override;
             void visit_binary_expr(BinaryExpr& expr) override;
             void visit_literal(Token* literal) override;
             void visit_assignment(Assignment& inst) override;
@@ -23,8 +18,12 @@ namespace UASM {
             void visit_ret(Token* ret_val) override;
             void visit_label(Label& label) override;
             void visit_func(Function& func) override;
-            TokenType get_operand_type(Token* operand);
+            void assign_temp(Token* literal);
+
     };
+
 }
+
+
 
 #endif

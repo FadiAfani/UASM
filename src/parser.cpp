@@ -22,6 +22,35 @@ namespace UASM {
             );
     }
 
+    void BinaryExpr::print() {}
+    void BinaryExpr::accept(Visitor& visitor) {}
+
+    void FuncCall::print() {}
+    void FuncCall::accept(Visitor& visitor) {}
+
+    void UnaryExpr::print() {}
+    void UnaryExpr::accept(Visitor& visitor) {}
+
+    void Assignment::print() {}
+    void Assignment::accept(Visitor& visitor) {}
+
+    void JmpInst::print() {}
+    void JmpInst::accept(Visitor& visitor) {}
+
+    void Label::print() {}
+    void Label::accept(Visitor& visitor) {}
+
+    void Function::print() {}
+    void Function::accept(Visitor& visitor) {}
+
+    void Function::insert_symbol(Symbol sym) {
+        if (symbols.count(sym.variable->symbol) == 0)
+            symbols[sym.variable->symbol] = sym;
+    }
+
+    void Program::print() {}
+    void Program::accept(Visitor& visitor) {}
+
     Parser::Parser(std::vector<UASM::Token>& _tokens) : tokens(_tokens) {}
 
     std::unique_ptr<Program> Parser::parse() {
@@ -41,6 +70,12 @@ namespace UASM {
         else if (t->type == EXTERN_TOKEN)
             parse_extern_stmt();
 
+    }
+    
+    void Parser::parse_extern_stmt() {
+        consume_token(EXTERN_TOKEN, "");
+        Token* id = consume_token(IDENTIFIER_TOKEN, "expected an identifier");
+        program->externs.insert( {id->symbol, id});
     }
 
     void Parser::parse_function() {
@@ -133,7 +168,7 @@ namespace UASM {
             return {};
         }
 
-        func.symbols.insert({def.value().variable->symbol, def.value() });
+        func.insert_symbol(def.value());
         inst.expr = expr.value(); 
         return inst;
         
