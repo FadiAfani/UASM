@@ -6,6 +6,7 @@
 #include <optional>
 #include <variant>
 #include <queue>
+#include <list>
 #include "tokenizer.h"
 #include "visitor.h"
 
@@ -71,7 +72,16 @@ namespace UASM {
         void accept(Visitor& visitor) override;
     };
 
-    typedef std::variant<Assignment, JmpInst, Token*> Instruction;
+    struct Return : Unit {
+        Token* value;
+
+        Return(Token* _value);
+
+        void print() override;
+        void accept(Visitor& visitor) override;
+    };
+
+    typedef std::variant<Assignment, JmpInst, Return, FuncCall> Instruction;
 
     struct Label : Unit {
         Token* name;
@@ -101,6 +111,8 @@ namespace UASM {
 
     };
 
+
+
     class Parser {
         private:
             std::vector<Token>& tokens;
@@ -126,7 +138,7 @@ namespace UASM {
             std::optional<Instruction> parse_instruction(Function& func);
             std::optional<Assignment> parse_assignment(Function& func);
             std::optional<JmpInst> parse_jmp();
-            Token* parse_ret();
+            std::optional<Return> parse_ret();
             void parse_func_call();
             std::optional<BinaryExpr> parse_binary_expr();
             std::optional<Expr> parse_expr();

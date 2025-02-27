@@ -23,7 +23,7 @@ namespace UASM {
             else if (std::holds_alternative<JmpInst>(inst))
                 visit_jmp( std::get<JmpInst>(inst));
             else
-                visit_ret( std::get<Token*>(inst));
+                visit_ret( std::get<Return>(inst));
         }
     }
 
@@ -86,8 +86,8 @@ namespace UASM {
             throw std::logic_error("not a valid jump target");
     }
 
-    void Analyzer::visit_ret(Token* ret_val) {
-        if (ctx->ret_type->type != ret_val->type)
+    void Analyzer::visit_ret(Return& ret_val) {
+        if (ctx->ret_type->type != ret_val.value->type)
             throw std::logic_error("returned type does not match the function's return type");
     }
 

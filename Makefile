@@ -1,7 +1,7 @@
 BUILD = build
 SRC = src
 BIN = bin
-CC = g++-13
+CC = g++
 CLFAGS = -g -std=c++20 
 
 OBJS = $(SRCS:$(SRC)/%.cpp=$(BUILD)/%.o)

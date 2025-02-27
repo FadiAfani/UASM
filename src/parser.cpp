@@ -43,6 +43,10 @@ namespace UASM {
     void Function::print() {}
     void Function::accept(Visitor& visitor) {}
 
+    void Return::print() {}
+    void Return::accept(Visitor& visitor) {}
+    Return::Return(Token* _val) : value(_val) {}
+
     void Function::insert_symbol(Symbol sym) {
         if (symbols.count(sym.variable->symbol) == 0)
             symbols[sym.variable->symbol] = sym;
@@ -133,9 +137,10 @@ namespace UASM {
 
     }
 
-    Token* Parser::parse_ret() {
+    std::optional<Return> Parser::parse_ret() {
         consume_token(RET_TOKEN, "");
-        return parse_literal("expected a value after 'ret'");
+        Token* val = parse_literal("expected a value after 'ret'");
+        return val ? std::nullopt : std::make_optional(Return(val));
     }
 
     std::optional<Instruction> Parser::parse_instruction(Function& func) {
@@ -201,8 +206,10 @@ namespace UASM {
         if (t == nullptr)
             return {};
         inst.target = t; 
-        if ((t = peek(0)) != nullptr && t->type == IDENTIFIER_TOKEN)
+        if ((t = peek(0)) != nullptr && t->type == IDENTIFIER_TOKEN) {
             inst.cond = t;
+            ++cur_token;
+        }
 
         return inst;
 

@@ -1,0 +1,10 @@
+@main(x: i32): i32 {
+    %entry:
+        x: i32 = 3 + 4
+        cond: i32 = x < 4
+        goto if cond
+        ret x
+    %if:
+        z: i32 = x * y
+        ret z
+} 

@@ -12,7 +12,7 @@ namespace UASM {
             virtual void visit_literal(Token* literal) = 0;
             virtual void visit_assignment(Assignment& inst) = 0;
             virtual void visit_jmp(JmpInst& inst) = 0;
-            virtual void visit_ret(Token* ret_val) = 0;
+            virtual void visit_ret(Return& ret_val) = 0;
             virtual void visit_label(Label& label) = 0;
             virtual void visit_func(Function& func) = 0;
 
