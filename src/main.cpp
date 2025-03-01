@@ -16,9 +16,9 @@ int main(int argc, char** argv) {
     //UASM::Analyzer analyzer(std::move(program));
     //analyzer.analyze();
     UASM::Program* p = program.get();
-    UASM::CFGBuilder cfg_builder(std::move(program));
-    cfg_builder.build();
-    for (auto& [_, bbs] : cfg_builder.get_cfgs()) {
+    UASM::CFGBuilder cfg_builder(program.get());
+    auto cfgs = cfg_builder.build();
+    for (auto& [_, bbs] : *cfgs) {
         for (auto& bb : bbs)
             bb->print();
     }

@@ -14,26 +14,19 @@ namespace UASM {
         void print();
     };
 
-    class ControlFlowGraph {
-        private:
-            std::vector<std::list<BasicBlock>> adj_list;
-        public:
-            void connect(size_t out, size_t in);
-
-    };
+    using FunctionGraphMap = std::unordered_map<Function*, std::list<std::unique_ptr<BasicBlock>>>;
 
     class CFGBuilder {
         private:
-            std::unique_ptr<Program> program;
-            std::unordered_map<Function*, std::list<std::unique_ptr<BasicBlock>>> cfgs;
+            Program* program;
+            std::unique_ptr<FunctionGraphMap> cfgs;
 
         std::unordered_map<std::string, BasicBlock*> entries;
         public:
-            CFGBuilder(std::unique_ptr<Program> _program);
-            void build();
+            CFGBuilder(Program* _program);
+            std::unique_ptr<FunctionGraphMap> build();
             void break_block(Function& func, Label& label);
             void compute_successors(BasicBlock* bb);
-            std::unordered_map<Function*, std::list<std::unique_ptr<BasicBlock>>>& get_cfgs();
             
 
 

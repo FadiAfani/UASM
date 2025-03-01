@@ -1,4 +1,5 @@
 #include "../include/parser.h"
+#include <iostream>
 
 namespace UASM {
     /* WARNING: this is a very bad parser - REFACTOR */
@@ -31,10 +32,10 @@ namespace UASM {
     void UnaryExpr::print() {}
     void UnaryExpr::accept(Visitor& visitor) {}
 
-    void Assignment::print() {}
+    void Assignment::print() { std::cout << "<Assignment>" << std::endl; }
     void Assignment::accept(Visitor& visitor) {}
 
-    void JmpInst::print() {}
+    void JmpInst::print() { std::cout << "<Goto>" << std::endl; }
     void JmpInst::accept(Visitor& visitor) {}
 
     void Label::print() {}
@@ -43,7 +44,7 @@ namespace UASM {
     void Function::print() {}
     void Function::accept(Visitor& visitor) {}
 
-    void Return::print() {}
+    void Return::print() { std::cout << "<Return>" << std::endl; }
     void Return::accept(Visitor& visitor) {}
     Return::Return(Token* _val) : value(_val) {}
 
@@ -140,7 +141,7 @@ namespace UASM {
     std::optional<Return> Parser::parse_ret() {
         consume_token(RET_TOKEN, "");
         Token* val = parse_literal("expected a value after 'ret'");
-        return val ? std::nullopt : std::make_optional(Return(val));
+        return val == nullptr ? std::nullopt : std::make_optional(Return(val));
     }
 
     std::optional<Instruction> Parser::parse_instruction(Function& func) {
