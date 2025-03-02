@@ -28,10 +28,10 @@ namespace UASM {
     }
 
     void Analyzer::visit_assignment(Assignment& inst) {
-        if (ctx->symbols.count(inst.identifier.variable->symbol) > 0)
+        if (ctx->symbols.count(inst.identifier.variable.symbol) > 0)
             std::logic_error("ssa violation - variable redeclaration");
 
-        ctx->symbols.insert( { inst.identifier.variable->symbol, inst.identifier } );
+        ctx->symbols.insert( { inst.identifier.variable.symbol, inst.identifier } );
 
         if (std::holds_alternative<BinaryExpr>(inst.expr))
             visit_binary_expr( std::get<BinaryExpr>(inst.expr));
@@ -44,13 +44,13 @@ namespace UASM {
     void Analyzer::visit_binary_expr(BinaryExpr& expr) {
         TokenType t1;
         TokenType t2;
-        switch(expr.op->type) {
+        switch(expr.op.type) {
             case MINUS_TOKEN:
             case PLUS_TOKEN:
             case DIV_TOKEN:
             case MUL_TOKEN:
-                t1 = get_operand_type( expr.left);
-                t2 = get_operand_type( expr.right);
+                t1 = get_operand_type( &expr.left);
+                t2 = get_operand_type( &expr.right);
                 if (t1 != t2)
                     throw std::logic_error("incompatible types for this operation");
                 expr_types[&expr] = t1;
@@ -61,8 +61,8 @@ namespace UASM {
             case LTE_TOKEN:
             case NEQ_TOKEN:
             case DEQ_TOKEN:
-                t1 = get_operand_type( expr.left);
-                t2 = get_operand_type( expr.right);
+                t1 = get_operand_type( &expr.left);
+                t2 = get_operand_type( &expr.right);
                 if (t1 != t2)
                     throw std::logic_error("comparison operations can only be applied on operands of the same type");
                 expr_types[&expr] = I1_TYPE_TOKEN;
@@ -82,19 +82,19 @@ namespace UASM {
     }
 
     void Analyzer::visit_jmp(JmpInst& inst) {
-        if (ctx->labels.count(inst.target->symbol) == 0)
+        if (ctx->labels.count(inst.target.symbol) == 0)
             throw std::logic_error("not a valid jump target");
     }
 
     void Analyzer::visit_ret(Return& ret_val) {
-        if (ctx->ret_type->type != ret_val.value->type)
+        if (ctx->ret_type.type != ret_val.value.type)
             throw std::logic_error("returned type does not match the function's return type");
     }
 
     TokenType Analyzer::get_operand_type(Token* operand) {
         if (operand->type == IDENTIFIER_TOKEN) {
             Symbol& sym = ctx->symbols.at(operand->symbol);
-            return sym.type->type;
+            return sym.type.type;
         }
         
         return I1_TYPE_TOKEN;

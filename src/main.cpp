@@ -10,15 +10,15 @@ int main(int argc, char** argv) {
         std::cout << "specify a filepath argument" << std::endl;
     }
     UASM::Tokenizer tokenizer;
-    UASM::Parser parser(tokenizer.get_tokens());
     tokenizer.tokenize(argv[1]);
+    UASM::Parser parser(tokenizer.get_tokens());
     std::unique_ptr<UASM::Program> program = parser.parse();
     //UASM::Analyzer analyzer(std::move(program));
     //analyzer.analyze();
     UASM::Program* p = program.get();
     UASM::CFGBuilder cfg_builder(program.get());
     auto cfgs = cfg_builder.build();
-    for (auto& [_, bbs] : *cfgs) {
+    for (auto& [_, bbs] : cfgs->cfgs) {
         for (auto& bb : bbs)
             bb->print();
     }

@@ -8,8 +8,9 @@ namespace UASM {
         private:
             unsigned int temps = 0;
             std::pair<Function*, Label*> ctx;
+            std::unique_ptr<CFGData> cd;
         public:
-            SSAOptimizer(std::unique_ptr<Program> _program);
+            SSAOptimizer(std::unique_ptr<CFGData> _cd);
             void optimize() override;
             void visit_binary_expr(BinaryExpr& expr) override;
             void visit_literal(Token* literal) override;
@@ -19,9 +20,9 @@ namespace UASM {
             void visit_label(Label& label) override;
             void visit_func(Function& func) override;
             void assign_temp(Token* literal);
+            void create_pseudo_instruction(BasicBlock* bb);
 
     };
-
 }
 
 

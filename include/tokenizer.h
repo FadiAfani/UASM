@@ -82,9 +82,9 @@ namespace UASM {
         Token() = default;
 
         Token (Token&& other) noexcept : col(other.col), row(other.row), symbol(std::move(other.symbol)), type(other.type) {}
-        Token (Token& other) : col(other.col), row(other.row), symbol(std::move(other.symbol)), type(other.type) {}
+        Token (const Token& other) : col(other.col), row(other.row), symbol(std::move(other.symbol)), type(other.type) {}
 
-        Token& operator=(Token& other) {
+        Token& operator=(const Token& other) {
             if (this != &other) {
                 col = other.col;
                 row = other.row;

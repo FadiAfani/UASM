@@ -31,42 +31,42 @@ namespace UASM {
         Instruction& last = bb->instructions.back();
         if (std::holds_alternative<JmpInst>(last)) {
             JmpInst& jmp = std::get<JmpInst>(last);
-            bb->successors.push_back(entries[jmp.target->symbol]);
+            bb->successors.push_back(cfg_data->entries[jmp.target.symbol]);
         }
     }
 
     CFGBuilder::CFGBuilder(Program* _program) : program(_program) {
-        cfgs = std::make_unique<FunctionGraphMap>();
+        cfg_data = std::make_unique<CFGData>();
         for (auto&[_, func] : program->functions) {
             std::list<std::unique_ptr<BasicBlock>> l;
             for (auto&[_, label] : func.labels) {
                 std::unique_ptr<BasicBlock> bb = std::make_unique<BasicBlock>();
-                entries[label.name->symbol] = bb.get();
+                cfg_data->entries[label.name.symbol] = bb.get();
                 bb->tag = l.size();
                 l.push_back(std::move(bb));
             }
 
-            cfgs->insert( { &func, std::move(l)});
+            cfg_data->cfgs[&func] = std::move(l);
         }
     }
-    std::unique_ptr<FunctionGraphMap> CFGBuilder::build() {
+    std::unique_ptr<CFGData> CFGBuilder::build() {
         for (auto&[_, func] : program->functions) {
             for (auto&[_, label] : func.labels) {
                 break_block(func, label);
             }
-            for (auto& bb : cfgs->at(&func)) {
+            for (auto& bb : cfg_data->cfgs[&func]) {
                 compute_successors(bb.get());
             }
         }
-        return std::move(cfgs);
+        return std::move(cfg_data);
     }
 
     void CFGBuilder::break_block(Function& func, Label& label) {
-        auto& blocks = cfgs->at(&func);
+        auto& blocks = cfg_data->cfgs[&func];
 
 
         size_t i;
-        BasicBlock* entry = entries[label.name->symbol];
+        BasicBlock* entry = cfg_data->entries[label.name.symbol];
         for (i = 0; i < label.instructions.size(); i++) {
             Instruction& inst = label.instructions[i];
             entry->instructions.push_back(inst);

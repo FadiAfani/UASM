@@ -4,12 +4,13 @@
 #include <memory>
 #include "parser.h"
 #include "program_visitor.h"
+#include "cfg.h"
 
 namespace UASM {
 
     class Optimizer : ProgramVisitor {
         protected:
-            std::unique_ptr<Program> program;
+            std::unique_ptr<CFGData> cd;
 
         public:
             virtual void optimize() = 0;

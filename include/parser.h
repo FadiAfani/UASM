@@ -20,24 +20,22 @@ namespace UASM {
     };
 
     struct Symbol {
-        Token* variable;
-        Token* type;
+        Token variable;
+        Token type;
         unsigned int reg;
     };
 
-    typedef std::variant<Symbol, Token*> Operand;
-
     struct BinaryExpr : Unit {
-        Token* left;
-        Token* op;
-        Token* right;
+        Token left;
+        Token op;
+        Token right;
 
         void print() override;
         void accept(Visitor& visitor) override;
     };
 
     struct FuncCall : Unit {
-        Token* id;
+        Token id;
         std::vector<std::reference_wrapper<Token>> args;
 
         void print() override;
@@ -45,8 +43,8 @@ namespace UASM {
     };
 
     struct UnaryExpr : Unit {
-        Token* op;
-        Token* value;
+        Token op;
+        Token value;
 
         void print() override;
         void accept(Visitor& visitor) override;
@@ -65,17 +63,17 @@ namespace UASM {
     };
 
     struct JmpInst : Unit {
-        Token* cond;
-        Token* target;
+        Token cond;
+        Token target;
 
         void print() override;
         void accept(Visitor& visitor) override;
     };
 
     struct Return : Unit {
-        Token* value;
+        Token value;
 
-        Return(Token* _value);
+        Return(Token _value);
 
         void print() override;
         void accept(Visitor& visitor) override;
@@ -84,7 +82,7 @@ namespace UASM {
     typedef std::variant<Assignment, JmpInst, Return, FuncCall> Instruction;
 
     struct Label : Unit {
-        Token* name;
+        Token name;
         std::vector<Instruction> instructions;
 
         void print() override;
@@ -92,8 +90,8 @@ namespace UASM {
     };
 
     struct Function : Unit {
-        Token* name;
-        Token* ret_type;
+        Token name;
+        Token ret_type;
         std::unordered_map<std::string, Label> labels;
         std::unordered_map<std::string, Symbol> symbols;
 
@@ -111,8 +109,12 @@ namespace UASM {
 
     };
 
-
-
+    /* NOTE:
+     * keep optonals for future-proofing
+     * at this stage optionals are redundant since consume_token throws an error
+     *
+     * */
+    
     class Parser {
         private:
             std::vector<Token>& tokens;
@@ -122,13 +124,13 @@ namespace UASM {
         
         public:
             Parser(std::vector<Token>& _tokens);
-            Token* consume_any(std::initializer_list<TokenType> types, const char* err_msg);
-            Token* consume_token(TokenType type, const char* err_msg);
-            Token* get_next_token();
+            std::optional<Token> consume_any(std::initializer_list<TokenType> types, const char* err_msg);
+            std::optional<Token> consume_token(TokenType type, const char* err_msg);
+            std::optional<Token> get_next_token();
             Token* peek(size_t n);
-            Token* parse_binary_op(const char* err_msg);
-            Token* parse_type(const char* err_msg);
-            Token* parse_literal(const char* err_msg);
+            std::optional<Token> parse_binary_op(const char* err_msg);
+            std::optional<Token> parse_type(const char* err_msg);
+            std::optional<Token> parse_literal(const char* err_msg);
             std::unique_ptr<Program> parse();
             void parse_stmt();
             void parse_extern_stmt();
