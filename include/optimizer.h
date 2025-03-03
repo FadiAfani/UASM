@@ -7,13 +7,19 @@
 
 namespace UASM {
 
-    class Optimizer : ProgramVisitor {
-        protected:
-            std::unique_ptr<CFGData> cd;
+    class Optimizer : public ProgramVisitor {
 
         public:
             virtual void optimize() = 0;
             virtual ~Optimizer() {}
+    };
+    
+    class CFGOptimizer : Optimizer {
+        protected:
+            std::unique_ptr<CFGData> cd;
+        public:
+            CFGOptimizer(std::unique_ptr<CFGData> _cd);
+            void optimize() override;
     };
 
 }

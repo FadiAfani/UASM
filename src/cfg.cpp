@@ -16,7 +16,7 @@ namespace UASM {
         for (auto&[_, func] : program->functions) {
             std::list<std::unique_ptr<BasicBlock>> l;
             for (auto&[_, label] : func.labels) {
-                std::unique_ptr<BasicBlock> bb = std::make_unique<BasicBlock>();
+                std::unique_ptr<BasicBlock> bb = std::make_unique<BasicBlock>(func);
                 cfg_data->entries[label.name.symbol] = bb.get();
                 bb->tag = l.size();
                 l.push_back(std::move(bb));
@@ -52,7 +52,7 @@ namespace UASM {
         }
 
         BasicBlock* parent = entry;
-        auto cur = std::make_unique<BasicBlock>();
+        auto cur = std::make_unique<BasicBlock>(func);
         for (size_t j = i + 1; j < label.instructions.size(); j++) {
             Instruction& inst = label.instructions[j];
             cur->instructions.push_back(inst);
@@ -63,7 +63,7 @@ namespace UASM {
                 cur->tag = blocks.size();
                 parent = cur.get();
                 blocks.push_back(std::move(cur));
-                cur = std::make_unique<BasicBlock>();
+                cur = std::make_unique<BasicBlock>(func);
 
             }
 

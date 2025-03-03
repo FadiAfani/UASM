@@ -50,7 +50,7 @@ namespace UASM {
 
     };
 
-    typedef std::variant<BinaryExpr, Token*> Expr;
+    typedef std::variant<BinaryExpr, Token> Expr;
 
     struct Assignment : Unit {
         Symbol identifier;
@@ -80,14 +80,6 @@ namespace UASM {
 
     typedef std::variant<Assignment, JmpInst, Return, FuncCall> Instruction;
 
-    struct BasicBlock : Unit {
-        size_t tag;
-        std::list<Instruction> instructions;
-        std::list<BasicBlock*> successors;
-
-        void print() override;
-        void accept(ProgramVisitor& visitor) override;
-    };
 
     struct Label : Unit {
         Token name;
@@ -106,6 +98,18 @@ namespace UASM {
         void print() override;
         void accept(ProgramVisitor& visitor) override;
         void insert_symbol(Symbol sym);
+    };
+
+    struct BasicBlock : Unit {
+        Function& pf;
+        size_t tag;
+        std::list<Instruction> instructions;
+        std::list<BasicBlock*> successors;
+
+        BasicBlock(Function& _pf);
+
+        void print() override;
+        void accept(ProgramVisitor& visitor) override;
     };
 
     struct Program : Unit {

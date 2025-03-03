@@ -204,7 +204,7 @@ namespace UASM {
             if (bin.has_value())
                 expr = bin.value();
         } else if (t1 && t1->type == IDENTIFIER_TOKEN) {
-            expr = t1;
+            expr = *t1;
         }
         return expr;
     }

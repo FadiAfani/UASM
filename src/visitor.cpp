@@ -37,6 +37,7 @@ namespace UASM {
     void Program::print() {}
     void Program::accept(ProgramVisitor& visitor) {}
 
+    BasicBlock::BasicBlock(Function& _pf) : pf(_pf) {}
 
     void BasicBlock::print() {
         printf("\n-----------\n");
