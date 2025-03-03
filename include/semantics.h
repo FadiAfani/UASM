@@ -2,7 +2,7 @@
 #define SEMANTICS_H
 
 #include "parser.h"
-#include "program_visitor.h"
+#include "visitor.h"
 
 #include <string>
 
@@ -17,7 +17,7 @@ namespace UASM {
             Analyzer(std::unique_ptr<Program> program);
             void analyze();
             void visit_binary_expr(BinaryExpr& expr) override;
-            void visit_literal(Token* literal) override;
+            void visit_literal(Token& literal) override;
             void visit_assignment(Assignment& inst) override;
             void visit_jmp(JmpInst& inst) override;
             void visit_ret(Return& ret_val) override;

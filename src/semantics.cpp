@@ -35,8 +35,6 @@ namespace UASM {
 
         if (std::holds_alternative<BinaryExpr>(inst.expr))
             visit_binary_expr( std::get<BinaryExpr>(inst.expr));
-        else 
-            visit_literal( std::get<Token*>(inst.expr));
         
 
     }
@@ -74,10 +72,10 @@ namespace UASM {
         }
     }
 
-    void Analyzer::visit_literal(Token* literal) {
-        if (ctx->symbols.count(literal->symbol) == 0)
+    void Analyzer::visit_literal(Token& literal) {
+        if (ctx->symbols.count(literal.symbol) == 0)
             throw std::logic_error("undefined symbol");
-        if (literal->type != 0)
+        if (literal.type != 0)
             throw std::logic_error("assignment failed - incompatible types");
     }
 

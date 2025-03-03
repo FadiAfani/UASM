@@ -3,7 +3,6 @@
 
 #include <memory>
 #include "parser.h"
-#include "program_visitor.h"
 #include "cfg.h"
 
 namespace UASM {

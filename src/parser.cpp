@@ -23,38 +23,6 @@ namespace UASM {
             );
     }
 
-    void BinaryExpr::print() {}
-    void BinaryExpr::accept(Visitor& visitor) {}
-
-    void FuncCall::print() {}
-    void FuncCall::accept(Visitor& visitor) {}
-
-    void UnaryExpr::print() {}
-    void UnaryExpr::accept(Visitor& visitor) {}
-
-    void Assignment::print() { std::cout << "<Assignment>" << std::endl; }
-    void Assignment::accept(Visitor& visitor) {}
-
-    void JmpInst::print() { std::cout << "<Goto>" << std::endl; }
-    void JmpInst::accept(Visitor& visitor) {}
-
-    void Label::print() {}
-    void Label::accept(Visitor& visitor) {}
-
-    void Function::print() {}
-    void Function::accept(Visitor& visitor) {}
-
-    void Return::print() { std::cout << "<Return>" << std::endl; }
-    void Return::accept(Visitor& visitor) {}
-    Return::Return(Token _val) : value(_val) {}
-
-    void Function::insert_symbol(Symbol sym) {
-        if (symbols.count(sym.variable.symbol) == 0)
-            symbols[sym.variable.symbol] = sym;
-    }
-
-    void Program::print() {}
-    void Program::accept(Visitor& visitor) {}
 
     Parser::Parser(std::vector<UASM::Token>& _tokens) : tokens(_tokens) {}
 

@@ -3,30 +3,6 @@
 
 namespace UASM {
 
-    void BasicBlock::print() {
-        printf("\n-----------\n");
-        printf("BasicBlock: %ld\n", tag);
-        printf("Successors: ");
-        for (BasicBlock* bb : successors) {
-            printf("%ld-> ", bb->tag);
-        }
-        printf("\n");
-        printf("Instructions: \n");
-        for (Instruction& inst : instructions) {
-            if (std::holds_alternative<JmpInst>(inst))
-                std::get<JmpInst>(inst).print();
-
-            if (std::holds_alternative<Return>(inst))
-                std::get<Return>(inst).print();
-
-            if (std::holds_alternative<Assignment>(inst))
-                std::get<Assignment>(inst).print();
-
-        }
-        printf("\n-----------\n");
-    }
-
-
     void CFGBuilder::compute_successors(BasicBlock* bb) {
         Instruction& last = bb->instructions.back();
         if (std::holds_alternative<JmpInst>(last)) {

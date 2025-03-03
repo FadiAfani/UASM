@@ -13,14 +13,13 @@ namespace UASM {
             SSAOptimizer(std::unique_ptr<CFGData> _cd);
             void optimize() override;
             void visit_binary_expr(BinaryExpr& expr) override;
-            void visit_literal(Token* literal) override;
+            void visit_literal(Token& literal) override;
             void visit_assignment(Assignment& inst) override;
             void visit_jmp(JmpInst& inst) override;
             void visit_ret(Return& ret_val) override;
             void visit_label(Label& label) override;
             void visit_func(Function& func) override;
             void assign_temp(Token* literal);
-            void create_pseudo_instruction(BasicBlock* bb);
 
     };
 }

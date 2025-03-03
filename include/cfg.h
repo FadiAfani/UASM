@@ -1,18 +1,10 @@
 #ifndef CFG_H
 #define CFG_H
 
-#include "parser.h"
-#include "program_visitor.h"
+#include "visitor.h"
 
 namespace UASM {
 
-    struct BasicBlock {
-        size_t tag;
-        std::list<Instruction> instructions;
-        std::list<BasicBlock*> successors;
-
-        void print();
-    };
 
     using FunctionGraphMap = std::unordered_map<Function*, std::list<std::unique_ptr<BasicBlock>>>;
 
