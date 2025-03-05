@@ -1,11 +1,9 @@
 #include "../include/error.h"
-#include <format>
 #include <iostream>
 
 namespace UASM {
 
     Error::Error(size_t col, size_t row, const char* msg) {
-        error_report = std::format("error at ({},{}): {}", col, row, msg);
     }
     void Error::print() {
         std::cout << error_report << std::endl;

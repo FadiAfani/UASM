@@ -187,6 +187,9 @@ namespace UASM {
         if ((id = peek(0)) != nullptr && id->type == IDENTIFIER_TOKEN) {
             inst.cond = std::move(*id);
             ++cur_token;
+        } else {
+            inst.cond = std::nullopt;
+
         }
 
         return inst;
@@ -320,7 +323,9 @@ namespace UASM {
                 err_msg);
     }
     std::optional<Token> Parser::parse_literal(const char* err_msg) {
-        return consume_any({IDENTIFIER_TOKEN, FLOAT_TOKEN, INTEGER_TOKEN}, err_msg);
+        std::optional<Token> t = consume_any({IDENTIFIER_TOKEN, FLOAT_TOKEN, INTEGER_TOKEN}, err_msg);
+        return t;
+
     }
 
     void Parser::recover(std::initializer_list<TokenType> safe_tokens) {

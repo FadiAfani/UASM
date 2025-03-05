@@ -14,11 +14,12 @@ namespace UASM {
             virtual ~Optimizer() {}
     };
     
-    class CFGOptimizer : Optimizer {
+    class CFGOptimizer : public Optimizer {
         protected:
-            std::unique_ptr<CFGData> cd;
+            CFGData* cd;
+            BasicBlock* ctx = nullptr;
         public:
-            CFGOptimizer(std::unique_ptr<CFGData> _cd);
+            CFGOptimizer(CFGData* _cd);
             void optimize() override;
     };
 

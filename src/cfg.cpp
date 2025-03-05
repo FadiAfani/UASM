@@ -7,7 +7,9 @@ namespace UASM {
         Instruction& last = bb->instructions.back();
         if (std::holds_alternative<JmpInst>(last)) {
             JmpInst& jmp = std::get<JmpInst>(last);
-            bb->successors.push_back(cfg_data->entries[jmp.target.symbol]);
+            BasicBlock* target = cfg_data->entries[jmp.target.symbol];
+            target->predecessors.push_back(bb);
+            bb->successors.push_back(target);
         }
     }
 
@@ -61,6 +63,7 @@ namespace UASM {
             {
                 parent->successors.push_back(cur.get());
                 cur->tag = blocks.size();
+                cur->predecessors.push_back(parent);
                 parent = cur.get();
                 blocks.push_back(std::move(cur));
                 cur = std::make_unique<BasicBlock>(func);

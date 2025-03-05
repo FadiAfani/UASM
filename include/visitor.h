@@ -4,6 +4,7 @@
 #include "tokenizer.h"
 #include <list>
 #include <variant>
+#include <optional>
 
 
 
@@ -11,12 +12,14 @@ namespace UASM {
 
     class ProgramVisitor;
 
-    struct Unit {
-        virtual ~Unit() {}
-        virtual void print() = 0;
-        virtual void accept(ProgramVisitor& visitor) = 0;
 
+    struct Literal {
+        Token value;
+
+        Literal(Token _value);
     };
+
+
 
     struct Symbol {
         Token variable;
@@ -50,7 +53,7 @@ namespace UASM {
 
     };
 
-    typedef std::variant<BinaryExpr, Token> Expr;
+    typedef std::variant<BinaryExpr,Token> Expr;
 
     struct Assignment : Unit {
         Symbol identifier;
@@ -62,7 +65,7 @@ namespace UASM {
     };
 
     struct JmpInst : Unit {
-        Token cond;
+        std::optional<Token> cond;
         Token target;
 
         void print() override;
@@ -104,6 +107,7 @@ namespace UASM {
         Function& pf;
         size_t tag;
         std::list<Instruction> instructions;
+        std::list<BasicBlock*> predecessors;
         std::list<BasicBlock*> successors;
 
         BasicBlock(Function& _pf);
@@ -131,8 +135,13 @@ namespace UASM {
 
     };
 
-    class ProgramVisitor : InstructionVisitor {
+    class ProgramVisitor : public InstructionVisitor {
         public:
+            virtual void visit_instruction(Instruction& inst) {
+                std::visit([this](auto&& i) {
+                        i.accept(*this);
+                }, inst);
+            }
             virtual ~ProgramVisitor() {}
             virtual void visit_label(Label& label) = 0;
             virtual void visit_func(Function& func) = 0;

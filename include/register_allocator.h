@@ -5,12 +5,23 @@
 
 namespace UASM {
 
-    class RegisterAllocator : Optimizer {
+    class RegisterAllocator : public CFGOptimizer {
         private:
-            std::unordered_map<Token*, std::vector<unsigned int>> graph;
+            std::unordered_map<std::string, std::vector<std::reference_wrapper<std::string>>> graph;
+            std::unordered_map<std::string, std::pair<unsigned int, unsigned int>> intervals;
+            unsigned int cur_inst = 0;
         public:
-            void connect(Token* in, Token* out);
-
+            RegisterAllocator(CFGData* _cd);
+            void visit_instruction(Instruction& inst) override;
+            void connect(std::string& in, std::string& out);
+            void visit_binary_expr(BinaryExpr& expr) override;
+            void visit_literal(Token& literal) override;
+            void visit_assignment(Assignment& inst) override;
+            void visit_jmp(JmpInst& inst) override;
+            void visit_ret(Return& ret) override;
+            void visit_label(Label& label) override;
+            void visit_func(Function& func) override;
+            const std::unordered_map<std::string, std::pair<unsigned int, unsigned int>>& get_intervals();
 
 
     };

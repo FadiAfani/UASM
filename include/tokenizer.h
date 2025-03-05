@@ -13,6 +13,15 @@
 
 namespace UASM {
 
+    class ProgramVisitor;
+
+    struct Unit {
+        virtual ~Unit() {}
+        virtual void print() = 0;
+        virtual void accept(ProgramVisitor& visitor) = 0;
+
+    };
+
     enum TokenType {
         PLUS_TOKEN,
         MINUS_TOKEN,
@@ -73,7 +82,7 @@ namespace UASM {
         { "u64",  U64_TYPE_TOKEN },
     };
 
-    struct Token {
+    struct Token : Unit {
         size_t col;
         size_t row;
         std::string symbol;
@@ -104,6 +113,8 @@ namespace UASM {
 
             return *this;
         }
+        void print() override;
+        void accept(ProgramVisitor& visitor) override;
     };
 
     class Tokenizer {
