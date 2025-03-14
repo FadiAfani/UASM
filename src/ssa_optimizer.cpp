@@ -1,11 +1,13 @@
 #include "../include/ssa_optimizer.h"
+#include "../include/visitor.h"
 
 namespace UASM {
 
     SSAOptimizer::SSAOptimizer(CFGData* _cd) : CFGOptimizer(_cd) {}
 
     void SSAOptimizer::visit_literal(Token& literal) { 
-        literal.symbol = dups[literal.symbol].new_symbol;
+        if (literal.type == IDENTIFIER_TOKEN)
+            literal.symbol = dups[literal.symbol].new_symbol;
     }
     void SSAOptimizer::visit_jmp(JmpInst& inst) {
     }
@@ -14,6 +16,7 @@ namespace UASM {
     void SSAOptimizer::visit_func(Function& function) {
     }
     void SSAOptimizer::visit_ret(Return& ret) {
+
     }
     void SSAOptimizer::visit_binary_expr(BinaryExpr& expr) {
     }
@@ -23,7 +26,7 @@ namespace UASM {
         std::string& old_symbol = assignment.identifier.variable.symbol;
 
         if (dups.count(old_symbol) > 0) {
-            std::string new_symbol = std::to_string(dups[old_symbol].dups++);
+            std::string new_symbol = old_symbol + std::to_string(dups[old_symbol].dups++);
             dups[old_symbol].new_symbol = new_symbol;
         } else {
             dups[old_symbol] = { .dups = 0, .new_symbol = old_symbol + "0" };
@@ -56,5 +59,14 @@ namespace UASM {
         }
     }
 
+    void SSAOptimizer::optimize() {
+        for (auto&[_, bbs] : cd->cfgs) {
+            if (bbs.size() > 0) {
+                for ( BasicBlock::InOrder it(bbs.front().get()); !it.empty(); ++it) {
+                    it->accept(*this);
+                }
+            }
+        }
+    }
 
 }

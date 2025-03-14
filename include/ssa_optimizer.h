@@ -5,9 +5,9 @@
 
 struct AltSymbol {
     unsigned int dups;
-    std::string& new_symbol;
+    std::string new_symbol;
 
-    AltSymbol(std::string& _new_symbol) : new_symbol(_new_symbol) {}
+    //AltSymbol(std::string& _new_symbol) : new_symbol(_new_symbol) {}
 };
 
 namespace UASM {
@@ -17,6 +17,7 @@ namespace UASM {
             std::unordered_map<std::string, AltSymbol> dups;
         public:
             SSAOptimizer(CFGData* _cd);
+            void optimize() override;
             void visit_binary_expr(BinaryExpr& expr) override;
             void visit_literal(Token& literal) override;
             void visit_assignment(Assignment& inst) override;

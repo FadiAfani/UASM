@@ -98,8 +98,6 @@ namespace UASM {
         for (Instruction& inst : instructions) {
             visitor.visit_instruction(inst);
         }
-        for (BasicBlock* bb : successors)
-            bb->accept(visitor);
     }
 
 }

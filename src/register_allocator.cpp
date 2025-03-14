@@ -32,13 +32,10 @@ namespace UASM {
     }
 
     void RegisterAllocator::visit_jmp(JmpInst& inst) {
-        if (inst.cond.has_value())
-            visit_literal(inst.cond.value());
 
     }
 
     void RegisterAllocator::visit_ret(Return& ret) {
-        visit_literal(ret.value);
     }
 
     void RegisterAllocator::visit_label(Label& l) {}
@@ -47,5 +44,15 @@ namespace UASM {
 
     const std::unordered_map<std::string, std::pair<unsigned int, unsigned int>>& RegisterAllocator::get_intervals() {
         return intervals;
+    }
+
+    void RegisterAllocator::optimize() {
+        for (auto&[_, bbs] : cd->cfgs) {
+            if (bbs.size() > 0) {
+                for ( BasicBlock::PostOrder it(bbs.front().get()); !it.empty(); ++it) {
+                    it->accept(*this);
+                }
+            }
+        }
     }
 }

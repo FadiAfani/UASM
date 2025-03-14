@@ -5,8 +5,10 @@
 #include <list>
 #include <variant>
 #include <optional>
-
-
+#include <unordered_set>
+#include <functional>
+#include <stack>
+#include <queue>
 
 namespace UASM {
 
@@ -111,9 +113,90 @@ namespace UASM {
         std::list<BasicBlock*> successors;
 
         BasicBlock(Function& _pf);
-
         void print() override;
         void accept(ProgramVisitor& visitor) override;
+
+        class PostOrder {
+            using iterator_category = std::forward_iterator_tag;
+            using difference_type = std::ptrdiff_t;
+            using value_type = BasicBlock;
+            using pointer = BasicBlock*;
+            using reference = BasicBlock&;
+
+
+            private:
+                std::stack<pointer> dfs;
+
+            public:
+                PostOrder(pointer root) {
+                    if (root) {
+                        std::unordered_set<pointer> visited;
+                        std::function<void(pointer, std::unordered_set<pointer>)> traverse = [&](pointer node, std::unordered_set<pointer> visited) {
+                            dfs.push(node);
+                            for (BasicBlock* bb : node->successors) {
+                                if (visited.count(bb) == 0)
+                                    traverse(bb, visited);
+                            }
+
+                        };
+                        traverse(root, visited);
+                    }
+                }
+                
+                reference operator*() {
+                    return *dfs.top();
+                }
+                pointer operator->() {
+                    return dfs.top();
+                }
+                PostOrder& operator++() {
+                    if (!dfs.empty())
+                        dfs.pop();
+                    return *this;
+                }
+
+                bool empty() { return dfs.size() > 0; }
+        };
+        class InOrder {
+
+            using iterator_category = std::forward_iterator_tag;
+            using difference_type = std::ptrdiff_t;
+            using value_type = BasicBlock;
+            using pointer = BasicBlock*;
+            using reference = BasicBlock&;
+
+            private:
+                std::queue<pointer> bfs;
+                std::unordered_set<pointer> visited;
+
+            public:
+                InOrder(pointer root) {
+                    bfs.push(root);
+                }
+
+                reference operator*() {
+                    return *bfs.front();
+                }
+
+                pointer operator->() {
+                    return bfs.front();
+                }
+
+                InOrder& operator++() {
+                    pointer cur = bfs.front();
+                    bfs.pop();
+
+                    for (BasicBlock* bb : cur->successors) {
+                        bfs.push(bb);
+                    }
+                    return *this;
+
+                }
+
+                bool empty() { return bfs.size() > 0; }
+
+
+        };
     };
 
     struct Program : Unit {

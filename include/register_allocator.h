@@ -3,15 +3,18 @@
 
 #include "optimizer.h"
 
+using Interval = std::pair<unsigned int, unsigned int>;
+
 namespace UASM {
 
     class RegisterAllocator : public CFGOptimizer {
         private:
             std::unordered_map<std::string, std::vector<std::reference_wrapper<std::string>>> graph;
-            std::unordered_map<std::string, std::pair<unsigned int, unsigned int>> intervals;
+            std::unordered_map<std::string, Interval> intervals;
             unsigned int cur_inst = 0;
         public:
             RegisterAllocator(CFGData* _cd);
+            void optimize() override;
             void visit_instruction(Instruction& inst) override;
             void connect(std::string& in, std::string& out);
             void visit_binary_expr(BinaryExpr& expr) override;
