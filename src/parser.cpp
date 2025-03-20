@@ -62,6 +62,7 @@ namespace UASM {
             return;
         consume_token(LPAREN_TOKEN, "expected a '(' symbol");
         std::optional<Symbol> p = parse_definition();
+        size_t order = 0;
         if (p.has_value()) {
             Token* comma;
             func.symbols.insert({p->variable.symbol, p.value()});
@@ -79,8 +80,10 @@ namespace UASM {
             Token* mod;
             while((mod = peek(0)) != nullptr && mod->type == MOD_TOKEN) {
                 std::optional<Label> label = parse_label(func);
-                if (label.has_value())
+                if (label.has_value()) {
+                    label.value().order = order++;
                     func.labels.insert({ label->name.symbol, label.value() });
+                }
             }
             consume_token(RCURLY_TOKEN, "expected a '}' symbol");
             program->functions.insert({func.name.symbol, std::move(func)});
@@ -238,10 +241,11 @@ namespace UASM {
 
         if (!t.has_value())
             return std::nullopt;
+
+        expr.op = std::move(t.value());
         
         t = parse_literal("expected an operand");
 
-        expr.op = std::move(t.value());
 
         if (!t.has_value())
             return std::nullopt;

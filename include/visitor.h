@@ -89,6 +89,7 @@ namespace UASM {
     struct Label : Unit {
         Token name;
         std::vector<Instruction> instructions;
+        size_t order;
 
         void print() override;
         void accept(ProgramVisitor& visitor) override;
@@ -133,6 +134,7 @@ namespace UASM {
                         std::unordered_set<pointer> visited;
                         std::function<void(pointer, std::unordered_set<pointer>)> traverse = [&](pointer node, std::unordered_set<pointer> visited) {
                             dfs.push(node);
+                            visited.insert(node);
                             for (BasicBlock* bb : node->successors) {
                                 if (visited.count(bb) == 0)
                                     traverse(bb, visited);
@@ -155,7 +157,7 @@ namespace UASM {
                     return *this;
                 }
 
-                bool empty() { return dfs.size() > 0; }
+                bool empty() { return dfs.size() == 0; }
         };
         class InOrder {
 
@@ -187,13 +189,16 @@ namespace UASM {
                     bfs.pop();
 
                     for (BasicBlock* bb : cur->successors) {
-                        bfs.push(bb);
+                        if (visited.count(bb) == 0) {
+                            visited.insert(bb);
+                            bfs.push(bb);
+                        }
                     }
                     return *this;
 
                 }
 
-                bool empty() { return bfs.size() > 0; }
+                bool empty() { return bfs.size() == 0; }
 
 
         };

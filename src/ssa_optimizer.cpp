@@ -19,18 +19,26 @@ namespace UASM {
 
     }
     void SSAOptimizer::visit_binary_expr(BinaryExpr& expr) {
+        expr.left.accept(*this);
+        expr.right.accept(*this);
     }
 
     void SSAOptimizer::visit_assignment(Assignment& assignment) {
         Expr& expr = assignment.expr;
         std::string& old_symbol = assignment.identifier.variable.symbol;
 
+        if (std::holds_alternative<BinaryExpr>(expr)) {
+            BinaryExpr& bin = std::get<BinaryExpr>(expr);
+            bin.accept(*this);
+        }
+
         if (dups.count(old_symbol) > 0) {
             std::string new_symbol = old_symbol + std::to_string(dups[old_symbol].dups++);
             dups[old_symbol].new_symbol = new_symbol;
         } else {
-            dups[old_symbol] = { .dups = 0, .new_symbol = old_symbol + "0" };
+            dups[old_symbol] = { .dups = 1, .new_symbol = old_symbol + "0" };
         }
+        assignment.identifier.variable.accept(*this);
 
         if (std::holds_alternative<BinaryExpr>(expr)) {
             BinaryExpr& bin = std::get<BinaryExpr>(expr);
@@ -41,7 +49,8 @@ namespace UASM {
                 temp.symbol = "$" + std::to_string(temps++);
                 Assignment temp_assign;
                 temp_assign.expr = bin.left;
-                temp_assign.identifier = { .variable = std::move(temp) };
+                bin.left.symbol = temp.symbol;
+                temp_assign.identifier = { .variable = std::move(temp), .type = assignment.identifier.type };
 
                 for (std::list<Instruction>::iterator it = ctx->instructions.begin(); it != ctx->instructions.end(); it++) {
                     if (std::holds_alternative<Assignment>(*it)) {
@@ -63,6 +72,7 @@ namespace UASM {
         for (auto&[_, bbs] : cd->cfgs) {
             if (bbs.size() > 0) {
                 for ( BasicBlock::InOrder it(bbs.front().get()); !it.empty(); ++it) {
+                    this->ctx = &(*it);
                     it->accept(*this);
                 }
             }

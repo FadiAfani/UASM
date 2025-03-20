@@ -17,7 +17,10 @@ namespace UASM {
         cfg_data = std::make_unique<CFGData>();
         for (auto&[_, func] : program->functions) {
             std::list<std::unique_ptr<BasicBlock>> l;
-            for (auto&[_, label] : func.labels) {
+            auto items = std::vector<std::pair<std::string, Label>>(func.labels.begin(), func.labels.end());
+            std::sort(items.begin(), items.end(), [](std::pair<std::string, Label>& a, std::pair<std::string, Label>& b) {
+                    return a.second.order < b.second.order; });
+            for (auto&[_, label] : items) {
                 std::unique_ptr<BasicBlock> bb = std::make_unique<BasicBlock>(func);
                 cfg_data->entries[label.name.symbol] = bb.get();
                 bb->tag = l.size();
