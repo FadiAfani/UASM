@@ -105,4 +105,11 @@ namespace UASM {
         }
     }
 
+    std::unordered_set<BasicBlock*> compute_idoms() {
+        std::unordered_set<BasicBlock*> idoms;
+
+
+        return idoms;
+    }
+
 }

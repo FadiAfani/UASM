@@ -5,6 +5,11 @@
 
 using Interval = std::pair<unsigned int, unsigned int>;
 
+struct LivenessInfo {
+    std::unordered_set<std::string> in;
+    std::unordered_set<std::string> out;
+};
+
 namespace UASM {
 
     class RegisterAllocator : public CFGOptimizer {
@@ -12,6 +17,8 @@ namespace UASM {
             std::unordered_map<std::string, std::vector<std::reference_wrapper<std::string>>> graph;
             std::unordered_map<std::string, Interval> intervals;
             unsigned int cur_inst = 0;
+            std::unordered_map<BasicBlock*, LivenessInfo> liveness;
+            BasicBlock* ctx = nullptr;
         public:
             RegisterAllocator(CFGData* _cd);
             void optimize() override;

@@ -1,13 +1,17 @@
 @main(x: i32): i32 {
     %entry:
-        x: i32 = 3 + 4
-        x: i32 = x + 2
-        cond: i32 = x < 4
-        goto if cond
-        cond2: i32 = x < 4
-        goto if cond2
-        ret x
-    %if:
-        z: i32 = x * x
-        ret z
+        a: i32 = 3 + 1
+        b: i32 = 5 + 1
+        d: i32 = 3 + 1
+        x: i32 = 100 + 1
+        cond: i32 = a > b
+        goto b2 cond
+    %b2:
+        c: i32 = a + b
+        d: i32 = 2 + 1
+    %b3:
+        c: i32 = 4 + 1
+        res: i32 = b * d
+        res1: i32 = res + c
+        ret res1
 } 

@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     auto cfgs = cfg_builder.build();
     UASM::SSAOptimizer ssa_opt(cfgs.get());
     UASM::RegisterAllocator reg_alloc(cfgs.get());
-    ssa_opt.optimize();
+    //ssa_opt.optimize();
     reg_alloc.optimize();
     for (auto& [_, bbs] : cfgs->cfgs) {
         for (auto& bb : bbs)
