@@ -116,6 +116,7 @@ namespace UASM {
         BasicBlock(Function& _pf);
         void print() override;
         void accept(ProgramVisitor& visitor) override;
+        std::unordered_set<BasicBlock*> compute_idoms();
 
         class PostOrder {
             using iterator_category = std::forward_iterator_tag;
