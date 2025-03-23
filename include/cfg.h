@@ -21,7 +21,7 @@ namespace UASM {
             CFGBuilder(Program* _program);
             std::unique_ptr<CFGData> build();
             void break_block(Function& func, Label& label);
-            void compute_successors(BasicBlock* bb);
+            void compute_neighbors(std::list<std::unique_ptr<BasicBlock>>::iterator& bb);
             
 
 

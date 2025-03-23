@@ -60,6 +60,7 @@ namespace UASM {
         t = consume_token(IDENTIFIER_TOKEN, "expected an identifier");
         if (!t.has_value())
             return;
+        func.name = std::move(t.value());
         consume_token(LPAREN_TOKEN, "expected a '(' symbol");
         std::optional<Symbol> p = parse_definition();
         size_t order = 0;
