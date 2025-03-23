@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
     UASM::SSAOptimizer ssa_opt(cfgs.get());
     UASM::RegisterAllocator reg_alloc(cfgs.get());
     //ssa_opt.optimize();
-    reg_alloc.optimize();
+    //reg_alloc.optimize();
     for (auto& [_, bbs] : cfgs->cfgs) {
         for (auto& bb : bbs)
             bb->print();

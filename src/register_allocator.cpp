@@ -65,7 +65,7 @@ namespace UASM {
                 for ( BasicBlock::PostOrder it(bbs.front().get()); !it.empty(); ++it) {
                     // compute out-state
                     ctx = &(*it);
-                    ctx->print();
+                    //ctx->print();
                     LivenessInfo& info = liveness[ctx];
                     for (BasicBlock* succ : it->successors) {
                         info.out.merge(liveness[succ].in);
