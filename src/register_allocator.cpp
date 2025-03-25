@@ -31,6 +31,7 @@ namespace UASM {
     void RegisterAllocator::visit_assignment(Assignment& assignment) {
         std::string& id = assignment.identifier.variable.symbol;
         LivenessInfo& ctx_info = liveness[ctx];
+        ctx_info.kill.insert(id);
         ctx_info.in.erase(id);
 
         std::visit([this](auto && e) { e.accept(*this); }, assignment.expr);
@@ -38,7 +39,6 @@ namespace UASM {
     }
 
     void RegisterAllocator::visit_jmp(JmpInst& inst) {
-        inst.target.accept(*this);
         if (inst.cond.has_value())
             inst.cond->accept(*this);
 
@@ -65,16 +65,20 @@ namespace UASM {
                 for ( BasicBlock::PostOrder it(bbs.front().get()); !it.empty(); ++it) {
                     // compute out-state
                     ctx = &(*it);
-                    //ctx->print();
+                    ctx->print();
                     LivenessInfo& info = liveness[ctx];
                     for (BasicBlock* succ : it->successors) {
-                        info.out.merge(liveness[succ].in);
+                        info.out.insert(liveness[succ].in.begin(), liveness[succ].in.end());
                     }
                     // compute in-state
-                    ctx->accept(*this);
-                    for (auto it2 = info.out.begin(); it2 != info.out.end(); ++it2) {
-                        info.in.erase(*it2);
+                    for (std::list<Instruction>::reverse_iterator it = ctx->instructions.rbegin(); it != ctx->instructions.rend(); ++it) {
+                        visit_instruction(*it);
                     }
+                    for (auto it2 = info.out.begin(); it2 != info.out.end(); ++it2) {
+                        if (!info.kill.contains(*it2))
+                            info.in.insert(*it2);
+                    }
+
                 }
             }
         }

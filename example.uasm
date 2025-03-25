@@ -6,6 +6,7 @@
         x: i32 = 100 + 1
         cond: i32 = a > b
         goto b2 cond
+        goto b3
     %b2:
         c: i32 = a + b
         d: i32 = 2 + 1

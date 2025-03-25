@@ -8,6 +8,8 @@ using Interval = std::pair<unsigned int, unsigned int>;
 struct LivenessInfo {
     std::unordered_set<std::string> in;
     std::unordered_set<std::string> out;
+    std::unordered_set<std::string> kill;
+    std::unordered_set<std::string> gen;
 };
 
 namespace UASM {
